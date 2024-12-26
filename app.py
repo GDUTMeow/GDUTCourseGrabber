@@ -355,7 +355,10 @@ def update_config() -> Any:
     """
     cookie = request.form.get("cookie") or ""
     delay = float(request.form.get("delay", 0.5))
-    start_time = request.form.get("start_time") + ":00"  # 获取抢课开始时间
+    if request.form.get("start_time"):
+        start_time = request.form.get("start_time") + ":00"  # 获取抢课开始时间
+    else:
+        start_time = None
     offset = int(request.form.get("offset", 300))  # 获取偏移量，默认300秒
 
     try:
@@ -386,8 +389,9 @@ def update_config() -> Any:
     # 更新配置对象
     config.account.cookie = cookie
     config.delay = delay
-    config.offset = offset
-    config.start_time = start_time
+    if start_time:
+        config.start_time = start_time
+        config.offset = offset
     config.courses = courses
 
     save_config(config)

@@ -1,0 +1,17 @@
+[project]
+name = "GDUTCourseGrabber"
+version = "3.0.0"
+description = "广东工业大学（GDUT）抢课助手，发挥计算机的力量，让你抢课解放双手，快人一步"
+authors = [
+    {name = "Ricky8955555", email = "rkmiao@duck.com"},
+    {name = "Pesy Wu", email = "GamerNoTitle@outlook.com"},
+    {name = "Ron1337", email = "zzpengroot@outlook.com"},
+    {name = "keqingmoe", email = "me@keqing.moe"},
+]
+dependencies = []
+requires-python = "==3.12.*"
+readme = "README.md"
+license = {text = "AGPL-3.0"}
+
+[tool.pdm]
+distribution = false

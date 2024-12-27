@@ -12,7 +12,7 @@ from gdut_course_grabber.utils.eas import EasClient
 router = APIRouter()
 
 
-@router.get("/courses/")
+@router.get("/courses")
 async def get_courses(count: int = 10, page: int = 1) -> ApiResponse[list[Course]]:
     """
     获取公选课课程列表路由。

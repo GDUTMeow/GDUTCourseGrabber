@@ -160,19 +160,88 @@ function displayCurrentPage() {
             <td>${course.teaxm}</td>
             <td>${course.pkrs}</td>
             <td>
-                <form action="/add_course" method="post">
-                    <input type="hidden" name="kcrwdm" value="${course.kcrwdm}">
-                    <input type="hidden" name="kcmc" value="${course.kcmc}">
-                    <input type="hidden" name="teacher" value="${course.teaxm || '未知'}">
-                    <input type="hidden" name="preset" value="true">
-                    <input type="hidden" name="remark" value="">
-                    <button type="submit" class="btn">添加</button>
-                    <button type="button" class="btn show-detail" onclick="showDetail(${course.kcrwdm})">详细信息</button>
-                </form>
+                <input type="hidden" name="kcrwdm" value="${course.kcrwdm}">
+                <input type="hidden" name="kcmc" value="${course.kcmc}">
+                <input type="hidden" name="teacher" value="${course.teaxm || '未知'}">
+                <input type="hidden" name="preset" value="true">
+                <input type="hidden" name="remark" value="">
+                <button type="submit" class="btn" onclick="addCourse(${course.kcrwdm})">添加</button>
+                <button type="button" class="btn show-detail" onclick="showDetail(${course.kcrwdm})">详细信息</button>
             </td>
         `;
         tableBody.appendChild(row);
     }
+}
+
+function addCourse(course_id) {
+    // 找到包含指定 course_id 的表格行
+    const courseRow = document.querySelector(`#available-courses-list tr td input[name="kcrwdm"][value="${course_id}"]`);
+    if (!courseRow) {
+        showDialog('错误', '找不到课程信息');
+        return;
+    }
+
+    const tr = courseRow.closest('tr');
+    const kcrwdm = tr.querySelector('input[name="kcrwdm"]').value;
+    const kcmc = tr.querySelector('input[name="kcmc"]').value;
+    const teacher = tr.querySelector('input[name="teacher"]').value;
+    const preset = tr.querySelector('input[name="preset"]').value;
+    const remark = tr.querySelector('input[name="remark"]').value;
+
+    // 发送 POST 请求到 /add_course
+    fetch('/add_course', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            kcrwdm: kcrwdm,
+            kcmc: kcmc,
+            teacher: teacher,
+            preset: preset,
+            remark: remark
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showDialog('信息', '课程添加成功');
+            // 将新课程添加到已选课程列表
+            addCourseToSelectedList(data);
+        } else {
+            showDialog('错误', data.error || '添加课程失败');
+        }
+    })
+    .catch(error => {
+        console.error('添加课程失败:', error);
+        showDialog('错误', '添加课程失败，请查看控制台错误信息。');
+    });
+}
+
+function addCourseToSelectedList(course) {
+    const coursesContainer = document.getElementById("courses-container");
+
+    // 检查课程是否已经存在
+    const existingCourse = coursesContainer.querySelector(`input[name="kcrwdm"][value="${course.kcrwdm}"]`);
+    if (existingCourse) {
+        showDialog('错误', '该课程已添加到已选课程列表。');
+        return;
+    }
+
+    // 创建新的课程条目
+    const courseEntry = document.createElement("div");
+    courseEntry.className = "course-entry";
+    courseEntry.innerHTML = `
+    <input type="text" name="kcrwdm" placeholder="课程ID" value="${course.kcrwdm}" readonly>
+    <input type="text" name="kcmc" placeholder="课程名称" value="${course.kcmc}" readonly>
+    <input type="text" name="teacher" placeholder="老师名字" value="${course.teacher}" readonly>
+    <input type="text" name="remark" placeholder="备注" value="${course.remark}">
+    <input type="hidden" name="preset" value="${course.preset}">
+    <button type="button" class="btn ${course.preset ? 'save-remark' : 'remove-course'}" onclick="${course.preset ? `saveRemark(${course.kcrwdm})` : `this.parentElement.remove(); checkCoursesCount();`}">${course.preset ? '保存备注' : '-'}</button>
+    <button type="button" class="btn remove-course" onclick="this.parentElement.remove()">-</button>
+    `;
+    coursesContainer.appendChild(courseEntry);
+    checkCoursesCount();
 }
 
 function updatePagination() {

@@ -85,27 +85,6 @@
                     </tr>
                 </thead>
                 <tbody id="available-courses-list">
-                    {% for course in available_courses %}
-                    <tr>
-                        <td>{{ course.kcrwdm }}</td>
-                        <td>{{ course.kcmc }}({{ course.xf }}分)</td>
-                        <td>{{ course.time }}</td>
-                        <td>{{ course.teamx }}</td>
-                        <td>{{ course.pkrs }}</td>
-                        <td>
-                            <form action="{{ url_for('add_course') }}" method="post">
-                                <input type="hidden" name="kcrwdm" value="{{ course.kcrwdm }}">
-                                <input type="hidden" name="kcmc" value="{{ course.kcmc }}({{ course.xf }})">
-                                <input type="hidden" name="teacher" value="{{ course.teamx or '未知' }}">
-                                <input type="hidden" name="preset" value="true">
-                                <input type="hidden" name="remark" value="">
-                                <button type="submit" class="btn">添加</button>
-                                <button type="button" class="btn show-detail"
-                                    onclick="showDetail({{ course.kcrwdm }})">详细信息</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
                 </tbody>
             </table>
             <div class="pagination">

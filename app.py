@@ -157,11 +157,12 @@ def add_course() -> Any:
     Returns:
         Any: 添加结果的 JSON 响应。
     """
-    kcrwdm = request.form.get("kcrwdm")
-    kcmc = request.form.get("kcmc")
-    teacher = request.form.get("teacher", "未知")  # 默认值为'未知'
-    preset = request.form.get("preset", "false").lower() == "true"  # 获取 preset 标记
-    remark = request.form.get("remark", "")  # 获取备注
+    log_message(request.json)
+    kcrwdm = request.json.get("kcrwdm")
+    kcmc = request.json.get("kcmc")
+    teacher = request.json.get("teacher", "未知")  # 默认值为'未知'
+    preset = request.json.get("preset", "false").lower() == "true"  # 获取 preset 标记
+    remark = request.json.get("remark", "")  # 获取备注
 
     # 校验数据
     if not kcrwdm or not kcmc:
@@ -265,6 +266,8 @@ def grab_course(course: Course, cookie: str) -> bool:
             f"抢课请求发送，课程ID: {course.kcrwdm}, 名称: {course.kcmc}, 老师: {course.teacher}, 响应: {response.text}"
         )
         if "您已经选了该门课程" in response.text:
+            return True
+        if "超出选课要求门数" in response.text:
             return True
     except Exception as e:
         log_message(f"抢课失败: {e}")

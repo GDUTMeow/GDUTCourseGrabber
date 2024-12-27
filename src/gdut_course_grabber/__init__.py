@@ -1,0 +1,3 @@
+"""
+GDUT Course Grabber。
+"""

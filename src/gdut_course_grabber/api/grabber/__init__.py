@@ -77,6 +77,22 @@ def destroy_task(id: int) -> ApiResponse[None]:
     return ApiResponse(data=None)
 
 
+@router.get("/{id}")
+def get_task(id: int) -> ApiResponse[GrabberTask]:
+    """
+    获取抢课任务路由。
+
+    Args:
+        id (int): 抢课任务 ID。
+
+    Returns:
+        ApiResponse[GrabberTask]: 指定 ID 的抢课任务信息。
+    """
+
+    entry = _get_grabber_entry(id)
+    return ApiResponse(data=entry.task)
+
+
 @router.get("/{id}/reset")
 def reset_task(id: int) -> ApiResponse[None]:
     """
@@ -92,22 +108,6 @@ def reset_task(id: int) -> ApiResponse[None]:
         raise entity_not_found_error(id) from ex
 
     return ApiResponse(data=None)
-
-
-@router.get("/{id}")
-def get_task(id: int) -> ApiResponse[GrabberTask]:
-    """
-    获取抢课任务路由。
-
-    Args:
-        id (int): 抢课任务 ID。
-
-    Returns:
-        ApiResponse[GrabberTask]: 指定 ID 的抢课任务信息。
-    """
-
-    entry = _get_grabber_entry(id)
-    return ApiResponse(data=entry.task)
 
 
 @router.get("/{id}/start")

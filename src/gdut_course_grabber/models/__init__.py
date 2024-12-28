@@ -148,6 +148,11 @@ class GrabberTask(BaseModel):
     抢课任务。
     """
 
+    account: Account
+    """
+    用于执行抢课操作的帐户。
+    """
+
     config: GrabberConfig = GrabberConfig()
     """
     抢课工具配置。
@@ -156,15 +161,4 @@ class GrabberTask(BaseModel):
     courses: list[Course] = []
     """
     待抢课课程列表。
-    """
-
-
-class Config(BaseModel):
-    """
-    配置。
-    """
-
-    account: Account = Account(session_id="")
-    """
-    帐户。
     """

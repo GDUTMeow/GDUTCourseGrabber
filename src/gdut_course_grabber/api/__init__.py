@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 
 from gdut_course_grabber.api.exc import ApiException, unexpected_error, validation_error
 
-from . import config, eas, grabber
+from . import eas, grabber
 
 app = FastAPI()
 """
@@ -17,7 +17,6 @@ API 接口应用。
 """
 
 app.include_router(eas.router, prefix="/eas")
-app.include_router(config.router, prefix="/config")
 app.include_router(grabber.router, prefix="/grabber")
 
 

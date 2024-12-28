@@ -9,7 +9,7 @@ from types import MappingProxyType
 from pydantic import TypeAdapter
 
 from gdut_course_grabber.core.grabber import Grabber
-from gdut_course_grabber.models import Account, GrabberTask
+from gdut_course_grabber.models import GrabberTask
 
 
 @dataclass(kw_only=True)
@@ -34,23 +34,7 @@ class GrabberTaskManager:
     _grabbers: dict[int, GrabberEntry]
     _next_id: int
 
-    _account: Account
-
     path: str
-
-    @property
-    def account(self) -> Account:
-        """
-        用于执行抢课任务的帐户。
-        """
-
-        return self._account
-
-    @account.setter
-    def account(self, value: Account) -> None:
-        for grabber in self._grabbers.values():
-            grabber.conductor.account = value
-        self._account = value
 
     @property
     def grabbers(self) -> MappingProxyType[int, GrabberEntry]:
@@ -60,18 +44,16 @@ class GrabberTaskManager:
 
         return MappingProxyType(self._grabbers)
 
-    def __init__(self, path: str, account: Account) -> None:
+    def __init__(self, path: str) -> None:
         """
         初始化 `GrabberTaskManager`。
 
         Args:
             path (str): 抢课任务持久化路径。
-            account (Account): 用于执行抢课任务的帐户。
         """
 
         self._grabbers = {}
         self._next_id = 0
-        self._account = account
         self.path = path
 
         self._load_tasks()
@@ -114,7 +96,19 @@ class GrabberTaskManager:
             Grabber: 从指定抢课任务解析创建的抢课工具。
         """
 
-        return Grabber(self._account, task.config, task.courses)
+        return Grabber(task.account, task.config, task.courses)
+
+    def update_task(self, id: int, task: GrabberTask) -> None:
+        """
+        更新抢课任务。
+
+        Args:
+            id (int): 抢课任务 ID。
+            task (GrabberTask): 将要更新为的抢课任务。
+        """
+
+        self._grabbers[id].task = task
+        self.reset_task(id)
 
     def destroy_task(self, id: int) -> None:
         """

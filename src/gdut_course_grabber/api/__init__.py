@@ -40,9 +40,7 @@ async def global_exception_handler(_: Request, exc: Exception) -> JSONResponse:
 
 
 @app.exception_handler(RequestValidationError)
-async def validation_error_handler(
-    _: Request, exc: RequestValidationError
-) -> JSONResponse:
+async def validation_error_handler(_: Request, exc: RequestValidationError) -> JSONResponse:
     """
     处理校验错误。
     """

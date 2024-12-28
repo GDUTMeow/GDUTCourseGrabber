@@ -93,9 +93,7 @@ class Grabber:
                 except AuthorizationFailed:
                     raise
                 except Exception as ex:
-                    logger.warning(
-                        "grab course %s (%d) failed: %s", course.name, course.id, ex
-                    )
+                    logger.warning("grab course %s (%d) failed: %s", course.name, course.id, ex)
 
                     if not self.config.retry:
                         self._queue.remove(course)

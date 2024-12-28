@@ -69,9 +69,7 @@ def validation_error(exc: RequestValidationError) -> ApiException[ValidationErro
     """
 
     error = ValidationError(body=exc.body, errors=exc.errors())
-    response = ApiResponse(
-        error=ErrorKind.VALIDATION, message="validation failed.", data=error
-    )
+    response = ApiResponse(error=ErrorKind.VALIDATION, message="validation failed.", data=error)
     return ApiException(response, 400)
 
 
@@ -88,7 +86,5 @@ def entity_not_found_error[T](request: T) -> ApiException[EntityNotFound[T]]:
 
     message = f"entity `{request}` not found."
     error = EntityNotFound(request=request)
-    response = ApiResponse(
-        error=ErrorKind.ENTITY_NOT_FOUND, message=message, data=error
-    )
+    response = ApiResponse(error=ErrorKind.ENTITY_NOT_FOUND, message=message, data=error)
     return ApiException(response, 404)

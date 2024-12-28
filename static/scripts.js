@@ -158,7 +158,7 @@ function displayCurrentPage() {
             <td>${course.kcmc} (${course.xf}分)</td>
             <td>${course.xmmc}</td>
             <td>${course.teaxm}</td>
-            <td>${course.pkrs}</td>
+            <td>${course.jxbrs}/${course.pkrs}</td>
             <td>
                 <input type="hidden" name="kcrwdm" value="${course.kcrwdm}">
                 <input type="hidden" name="kcmc" value="${course.kcmc}">

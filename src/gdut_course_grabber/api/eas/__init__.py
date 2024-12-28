@@ -20,6 +20,7 @@ async def get_courses(
     获取公选课课程列表路由。
 
     Args:
+        account (AccountDep): 用于访问教务系统的帐户。
         count (int, optional): 数量。默认为 10。
         page (int, optional): 页面。默认为 1。
 
@@ -39,6 +40,7 @@ async def get_lessons(account: AccountDep, id: int) -> ApiResponse[list[Lesson]]
     获取公选课的节次详情列表路由。
 
     Args:
+        account (AccountDep): 用于访问教务系统的帐户。
         id (int): 课程 ID。
 
     Returns:

@@ -110,6 +110,24 @@ def reset_task(id: int) -> ApiResponse[None]:
     return ApiResponse(data=None)
 
 
+@router.put("/{id}")
+def update_task(id: int, task: GrabberTask) -> ApiResponse[None]:
+    """
+    更新抢课任务路由。
+
+    Args:
+        id (int): 抢课任务 ID。
+        task (GrabberTask): 将要更新为的抢课任务。
+    """
+
+    try:
+        grabber_task_manager.update_task(id, task)
+    except KeyError as ex:
+        raise entity_not_found_error(id) from ex
+
+    return ApiResponse(data=None)
+
+
 @router.get("/{id}/start")
 async def start_task(id: int) -> ApiResponse[bool]:
     """

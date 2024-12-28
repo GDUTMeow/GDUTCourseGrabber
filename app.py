@@ -423,7 +423,7 @@ async def fetch_courses_endpoint() -> Any:
     try:
         courses_data = await fetch_courses(cookie)
         available_courses = courses_data.get("rows", [])
-        log_message(f"获取到课程数据：{available_courses}")
+        # log_message(f"获取到课程数据：{available_courses}")
         log_message(
             f"获取课程列表成功，共有 {courses_data['total']} 条记录，成功获取 {len(courses_data['rows'])} 条记录"
         )

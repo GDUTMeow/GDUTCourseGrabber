@@ -14,6 +14,8 @@ from gdut_course_grabber.models import Lesson as LessonModel
 
 from ._types import Course, Lesson
 
+_BASE_URL = "https://jxfw.gdut.edu.cn/"
+
 _BASE_HEADER = {
     "Host": "jxfw.gdut.edu.cn",
     "User-Agent": (
@@ -25,15 +27,13 @@ _BASE_HEADER = {
     "Accept-Encoding": "gzip, deflate, br",
     "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
     "X-Requested-With": "XMLHttpRequest",
-    "Origin": "https://jxfw.gdut.edu.cn",
+    "Origin": _BASE_URL,
     "DNT": "1",
     "Connection": "keep-alive",
     "Sec-Fetch-Dest": "empty",
     "Sec-Fetch-Mode": "cors",
     "Sec-Fetch-Site": "same-origin",
 }
-
-_DEFAULT_BASE_URL = "https://jxfw.gdut.edu.cn/"
 
 
 class AuthorizationFailed(Exception):
@@ -57,7 +57,7 @@ class EasClient:
 
     _client: AsyncClient
 
-    def __init__(self, account: Account, base_url: str = _DEFAULT_BASE_URL) -> None:
+    def __init__(self, account: Account) -> None:
         """
         初始化 `EasClient`。
 
@@ -67,9 +67,7 @@ class EasClient:
         """
 
         cookies = {"JSESSIONID": account.session_id}
-        self._client = AsyncClient(
-            base_url=base_url, headers=_BASE_HEADER, cookies=cookies
-        )
+        self._client = AsyncClient(base_url=_BASE_URL, headers=_BASE_HEADER, cookies=cookies)
 
     async def aclose(self) -> None:
         """
@@ -110,13 +108,9 @@ class EasClient:
             course (CourseModel): 所需选择的课程。
         """
 
-        headers = {
-            "Referer": str(self._client.base_url.join("/xskjcjxx!kjcjList.action"))
-        }
+        headers = {"Referer": str(self._client.base_url.join("/xskjcjxx!kjcjList.action"))}
         data = {"kcrwdm": str(course.id), "kcmc": course.name}
-        resp = await self._client.post(
-            "/xsxklist!getAdd.action", headers=headers, data=data
-        )
+        resp = await self._client.post("/xsxklist!getAdd.action", headers=headers, data=data)
 
         ret = self._validate(resp).decode().strip()
 
@@ -138,18 +132,14 @@ class EasClient:
         if page < 1 or count < 1:
             raise ValueError
 
-        headers = {
-            "Referer": str(self._client.base_url.join("xsxklist!xsmhxsxk.action"))
-        }
+        headers = {"Referer": str(self._client.base_url.join("xsxklist!xsmhxsxk.action"))}
         data: dict[str, Any] = {
             "sort": "kcrwdm",
             "order": "asc",
             "page": page,
             "rows": count,
         }
-        resp = await self._client.post(
-            "/xsxklist!getDataList.action", headers=headers, data=data
-        )
+        resp = await self._client.post("/xsxklist!getDataList.action", headers=headers, data=data)
 
         json = jsonlib.loads(self._validate(resp))
         return list(
@@ -172,9 +162,7 @@ class EasClient:
 
         headers = {
             "Referer": str(
-                self._client.base_url.join(
-                    f"/xsxklist!viewJxrl.action?kcrwdm={course_id}"
-                )
+                self._client.base_url.join(f"/xsxklist!viewJxrl.action?kcrwdm={course_id}")
             )
         }
         resp = await self._client.get(

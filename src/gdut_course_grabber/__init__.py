@@ -1,3 +1,3 @@
 """
-GDUT Course Grabber。
+GDUTCourseGrabber。
 """

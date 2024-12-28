@@ -1,5 +1,5 @@
 """
-GDUT Course Grabber 程序入口。
+GDUTCourseGrabber 程序入口。
 """
 
 import uvicorn

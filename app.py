@@ -344,7 +344,7 @@ def index() -> Any:
         with open(log_file_path, "r", encoding="utf-8") as log_file:
             logs = log_file.readlines()[-100:]  # 读取最后100行日志
     return render_template(
-        "index.html", config=config, logs="".join(logs), available_courses=[]
+        "index.html", config=config, logs="".join(logs), available_courses=[], start_time=config.start_time
     )
 
 

@@ -107,7 +107,7 @@
             <input type="datetime-local" id="start-time" name="start_time" value="{{ start_time | default('2024-09-01 12:00')}}">
 
             <label for="offset">提前抢课时间 (秒):</label>
-            <input type="number" class="offset" id="offset" name="offset" min="0" value="300">
+            <input type="number" class="offset" id="offset" name="offset" min="0" value="{{ offset | default(300) }}">
 
             <button type="button" class="btn" id="save-config-btn">保存配置</button>
         </div>

@@ -44,6 +44,7 @@ let pageSize = 10;
 let allCourses = [];
 let session_id = localStorage.getItem("session_id") || "";
 const API_BASE_URL = "/api";
+let tasks = [];
 
 document.addEventListener("DOMContentLoaded", function () {
     document
@@ -87,6 +88,8 @@ document.addEventListener("DOMContentLoaded", function () {
     document
         .getElementById("save-config-btn")
         .addEventListener("click", saveGrabCourseConfig);
+        updateButtonStatus();
+         fetchTasks();
 });
 
 function addCourseEntry() {
@@ -197,8 +200,8 @@ function displayCurrentPage() {
 }
 
 async function addCourse(course_id) {
-    // 找到包含指定 course_id 的表格行
-    const courseRow = document.querySelector(
+      // 找到包含指定 course_id 的表格行
+      const courseRow = document.querySelector(
         `#available-courses-list tr td input[name="kcrwdm"][value="${course_id}"]`
     );
     if (!courseRow) {
@@ -223,6 +226,7 @@ async function addCourse(course_id) {
         note: remark,
     };
     addCourseToSelectedList(courseData);
+    await saveGrabberTask(false);
 }
 function addCourseToSelectedList(course) {
     const configTableBody = document.querySelector(
@@ -266,6 +270,10 @@ function updatePagination() {
 }
 
 async function start() {
+      if(!tasks || tasks.length === 0){
+          showDialog("错误","请先保存配置")
+          return;
+      }
     try {
         const configTableBody = document.querySelector(
             "#config-dialog #config-table tbody"
@@ -329,6 +337,9 @@ async function start() {
             },
             courses: courses,
         };
+        
+        document.getElementById("start-qk-btn").disabled = true;
+        document.getElementById("stop-qk-btn").disabled = false;
 
         const response = await fetch(`${API_BASE_URL}/grabber/`, {
             method: "POST",
@@ -343,15 +354,21 @@ async function start() {
         const data = await response.json();
         if (data.error) {
             showDialog("错误", data.error);
+              document.getElementById("start-qk-btn").disabled = false;
+              document.getElementById("stop-qk-btn").disabled = true;
             return;
         }
         showDialog("信息", "抢课任务添加成功");
     } catch (e) {
         showDialog("错误", `开始抢课失败: ${e.message}`);
+            document.getElementById("start-qk-btn").disabled = false;
+            document.getElementById("stop-qk-btn").disabled = true;
     }
 }
 async function stop() {
     try {
+        document.getElementById("start-qk-btn").disabled = false;
+        document.getElementById("stop-qk-btn").disabled = true;
         const response = await fetch(`${API_BASE_URL}/grabber/0/cancel`, {
             method: "GET",
         });
@@ -361,6 +378,8 @@ async function stop() {
         const data = await response.json();
         if (data.error) {
             showDialog("错误", data.error);
+             document.getElementById("start-qk-btn").disabled = true;
+            document.getElementById("stop-qk-btn").disabled = false;
             return;
         }
         if (data.data) {
@@ -370,6 +389,8 @@ async function stop() {
         }
     } catch (error) {
         showDialog("错误", `停止抢课失败，请查看控制台错误信息: ${error.message}`);
+            document.getElementById("start-qk-btn").disabled = true;
+            document.getElementById("stop-qk-btn").disabled = false;
     }
 }
 async function fetchLogs() {
@@ -540,22 +561,39 @@ function updateCourseNote(inputElement) {
         localStorage.setItem("grabberConfig", JSON.stringify(grabberConfig));
     }
 }
+function updateButtonStatus() {
+    const startButton = document.getElementById("start-qk-btn");
+    const stopButton = document.getElementById("stop-qk-btn");
+  
+    // 初始状态：开始抢课按钮启用，停止抢课按钮禁用
+     startButton.disabled = false;
+     stopButton.disabled = true;
+}
+async function fetchTasks() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/grabber/`, {
+            method: "GET",
+        });
+         if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        if(data.error){
+            tasks = [];
+        }
+        else{
+              tasks = data.data;
+        }
+     
+    } catch (error) {
+        console.error("获取tasks失败:", error);
+    }
+}
 
-// 保存抢课配置功能
-function saveGrabCourseConfig() {
-    const startTimeInput = document.getElementById("start-time-config").value;
+async function saveGrabberTask(show_dialog = true) {
+      const startTimeInput = document.getElementById("start-time-config").value;
     const offsetInput = document.getElementById("offset-config").value;
-
-    if (!startTimeInput) {
-        showDialog("错误", "请设置抢课开始时间。");
-        return;
-    }
-
-    if (!offsetInput || isNaN(offsetInput) || parseInt(offsetInput) < 0) {
-        showDialog("错误", "请设置有效的抢课提前时间（秒）。");
-        return;
-    }
-    const configTableBody = document.querySelector(
+     const configTableBody = document.querySelector(
         "#config-dialog #config-table tbody"
     );
     let courses = [];
@@ -593,14 +631,60 @@ function saveGrabCourseConfig() {
                 note: note,
             });
         });
-    const grabberConfig = {
+     const grabberConfig = {
         startAt: startTimeInput ? new Date(startTimeInput).toISOString() : null,
         advanceTime: parseInt(offsetInput),
         courses: courses,
     };
-    localStorage.setItem("grabberConfig", JSON.stringify(grabberConfig));
-    document.querySelector("#config-dialog").close();
-    showDialog("信息", "配置保存成功");
+      localStorage.setItem("grabberConfig", JSON.stringify(grabberConfig));
+        const grabberTask = {
+            account: {
+                session_id: session_id,
+            },
+            config: {
+                delay: "PT0.5S",
+                start_at: grabberConfig.startAt,
+                retry: true,
+            },
+            courses: courses,
+        };
+        let response;
+          if (tasks && tasks.length > 0) {
+               response = await fetch(`${API_BASE_URL}/grabber/${tasks[0].key}`, {
+                  method: "PUT",
+                  headers: {
+                      "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify(grabberTask),
+              });
+          } else {
+              response = await fetch(`${API_BASE_URL}/grabber/`, {
+                  method: "POST",
+                  headers: {
+                      "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify(grabberTask),
+              });
+          }
+    
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+             const data = await response.json();
+                if (data.error) {
+                    showDialog("错误", data.error);
+                       return
+                }
+          await  fetchTasks();
+        if(show_dialog){
+            showDialog("信息", "配置保存成功");
+        }
+}
+
+// 保存抢课配置功能
+async function saveGrabCourseConfig() {
+      await saveGrabberTask()
+      document.querySelector("#config-dialog").close();
 }
 
 function openConfigDialog() {

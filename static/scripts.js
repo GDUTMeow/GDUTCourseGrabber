@@ -55,8 +55,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     checkCoursesCount();
     document.getElementById("cookie").value = session_id;
+    document.getElementById("cookie-readonly").value = session_id;
     document.getElementById("cookie").addEventListener("change", function () {
         session_id = this.value;
+        document.getElementById("cookie-readonly").value = session_id;
         localStorage.setItem("session_id", session_id);
     });
 
@@ -88,8 +90,8 @@ document.addEventListener("DOMContentLoaded", function () {
     document
         .getElementById("save-config-btn")
         .addEventListener("click", saveGrabCourseConfig);
-        updateButtonStatus();
-         fetchTasks();
+    updateButtonStatus();
+    fetchTasks();
 });
 
 function addCourseEntry() {
@@ -200,8 +202,8 @@ function displayCurrentPage() {
 }
 
 async function addCourse(course_id) {
-      // 找到包含指定 course_id 的表格行
-      const courseRow = document.querySelector(
+    // 找到包含指定 course_id 的表格行
+    const courseRow = document.querySelector(
         `#available-courses-list tr td input[name="kcrwdm"][value="${course_id}"]`
     );
     if (!courseRow) {
@@ -270,20 +272,25 @@ function updatePagination() {
 }
 
 async function start() {
-      if(!tasks || tasks.length === 0){
-          showDialog("错误","请先保存配置")
-          return;
-      }
+    if (!tasks || tasks.length === 0) {
+        showDialog("错误", "请先保存配置");
+        return;
+    }
     try {
         const configTableBody = document.querySelector(
             "#config-dialog #config-table tbody"
         );
         let courses = [];
         configTableBody.querySelectorAll("tr").forEach((courseEntry) => {
-            const courseNameInput = courseEntry.querySelector("td:nth-child(1) input");
-            const courseNameText = courseEntry.querySelector("td:nth-child(1)")?.textContent;
+            const courseNameInput = courseEntry.querySelector(
+                "td:nth-child(1) input"
+            );
+            const courseNameText =
+                courseEntry.querySelector("td:nth-child(1)")?.textContent;
 
-            const inputString = courseNameInput ? courseNameInput.value : courseNameText;
+            const inputString = courseNameInput
+                ? courseNameInput.value
+                : courseNameText;
 
             const regex = /(.+?)\s*[(\uff08(]*([\w\d\s]+?)[)\uff09)]*\s*$/;
             const match = inputString.match(regex);
@@ -294,15 +301,15 @@ async function start() {
             if (match) {
                 name = match[1].trim();
                 code = match[2].trim();
-            }else{
-              name = inputString.trim();
-              code = inputString.trim();
+            } else {
+                name = inputString.trim();
+                code = inputString.trim();
             }
             let teacher =
                 courseEntry.querySelector("td:nth-child(2) input")?.value ||
                 courseEntry.querySelector("td:nth-child(2)").textContent;
-             teacher = teacher ? teacher.trim().replace(/\s+/g, ' ') : "";
-             const note = courseEntry.querySelector("td:nth-child(3) input").value;
+            teacher = teacher ? teacher.trim().replace(/\s+/g, " ") : "";
+            const note = courseEntry.querySelector("td:nth-child(3) input").value;
 
             courses.push({
                 id: parseInt(code),
@@ -320,24 +327,26 @@ async function start() {
         }
         const startTimeInput = document.getElementById("start-time-config");
         const advanceTimeInput = document.getElementById("offset-config");
+        const delayInput = document.getElementById("delay-config");
         const grabberConfig = {
             startAt: startTimeInput.value
                 ? new Date(startTimeInput.value).toISOString()
                 : null,
             advanceTime: parseInt(advanceTimeInput.value),
+            delay: `PT${parseFloat(delayInput.value) || 0.5}S`,
         };
         const grabberTask = {
             account: {
                 session_id: session_id,
             },
             config: {
-                delay: "PT0.5S",
+                delay: grabberConfig.delay,
                 start_at: grabberConfig.startAt,
                 retry: true,
             },
             courses: courses,
         };
-        
+
         document.getElementById("start-qk-btn").disabled = true;
         document.getElementById("stop-qk-btn").disabled = false;
 
@@ -354,15 +363,15 @@ async function start() {
         const data = await response.json();
         if (data.error) {
             showDialog("错误", data.error);
-              document.getElementById("start-qk-btn").disabled = false;
-              document.getElementById("stop-qk-btn").disabled = true;
+            document.getElementById("start-qk-btn").disabled = false;
+            document.getElementById("stop-qk-btn").disabled = true;
             return;
         }
         showDialog("信息", "抢课任务添加成功");
     } catch (e) {
         showDialog("错误", `开始抢课失败: ${e.message}`);
-            document.getElementById("start-qk-btn").disabled = false;
-            document.getElementById("stop-qk-btn").disabled = true;
+        document.getElementById("start-qk-btn").disabled = false;
+        document.getElementById("stop-qk-btn").disabled = true;
     }
 }
 async function stop() {
@@ -378,7 +387,7 @@ async function stop() {
         const data = await response.json();
         if (data.error) {
             showDialog("错误", data.error);
-             document.getElementById("start-qk-btn").disabled = true;
+            document.getElementById("start-qk-btn").disabled = true;
             document.getElementById("stop-qk-btn").disabled = false;
             return;
         }
@@ -389,8 +398,8 @@ async function stop() {
         }
     } catch (error) {
         showDialog("错误", `停止抢课失败，请查看控制台错误信息: ${error.message}`);
-            document.getElementById("start-qk-btn").disabled = true;
-            document.getElementById("stop-qk-btn").disabled = false;
+        document.getElementById("start-qk-btn").disabled = true;
+        document.getElementById("stop-qk-btn").disabled = false;
     }
 }
 async function fetchLogs() {
@@ -497,15 +506,40 @@ function saveRemark(kcrwdm) {
             showDialog("错误", "保存备注失败，请查看控制台错误信息。");
         });
 }
-function removeCourseFromConfig(courseId) {
+async function removeCourseFromConfig(courseId) {
     const configTableBody = document.querySelector(
         "#config-dialog #config-table tbody"
     );
-    configTableBody
+    const tr = configTableBody
         .querySelector(`tr input[data-course-id="${courseId}"]`)
-        .closest("tr")
-        .remove();
-    loadConfigCourses();
+        ?.closest("tr");
+    if (tr) {
+        tr.remove();
+        // 从 localStorage 中移除
+        await removeCourseFromLocalStorage(courseId);
+
+        await saveGrabberTask(false);
+        loadConfigCourses();
+    }
+}
+
+async function removeCourseFromLocalStorage(courseId) {
+    const storedConfig = localStorage.getItem("grabberConfig");
+    if (!storedConfig) return;
+
+    const grabberConfig = JSON.parse(storedConfig);
+
+    if (!grabberConfig || !grabberConfig.courses) {
+        return;
+    }
+
+    const courses = grabberConfig.courses;
+    const index = courses.findIndex((course) => course.id === courseId);
+
+    if (index !== -1) {
+        courses.splice(index, 1);
+        localStorage.setItem("grabberConfig", JSON.stringify(grabberConfig));
+    }
 }
 
 function loadConfigCourses() {
@@ -564,127 +598,130 @@ function updateCourseNote(inputElement) {
 function updateButtonStatus() {
     const startButton = document.getElementById("start-qk-btn");
     const stopButton = document.getElementById("stop-qk-btn");
-  
+
     // 初始状态：开始抢课按钮启用，停止抢课按钮禁用
-     startButton.disabled = false;
-     stopButton.disabled = true;
+    startButton.disabled = false;
+    stopButton.disabled = true;
 }
 async function fetchTasks() {
     try {
         const response = await fetch(`${API_BASE_URL}/grabber/`, {
             method: "GET",
         });
-         if (!response.ok) {
+        if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        if(data.error){
+        if (data.error) {
             tasks = [];
+        } else {
+            tasks = data.data;
         }
-        else{
-              tasks = data.data;
-        }
-     
     } catch (error) {
         console.error("获取tasks失败:", error);
     }
 }
 
 async function saveGrabberTask(show_dialog = true) {
-      const startTimeInput = document.getElementById("start-time-config").value;
+    const startTimeInput = document.getElementById("start-time-config").value;
     const offsetInput = document.getElementById("offset-config").value;
-     const configTableBody = document.querySelector(
+    const delayInput = document.getElementById("delay-config").value;
+    const configTableBody = document.querySelector(
         "#config-dialog #config-table tbody"
     );
     let courses = [];
-     configTableBody.querySelectorAll("tr").forEach((courseEntry) => {
-            const courseNameInput = courseEntry.querySelector("td:nth-child(1) input");
-            const courseNameText = courseEntry.querySelector("td:nth-child(1)")?.textContent;
+    configTableBody.querySelectorAll("tr").forEach((courseEntry) => {
+        const courseNameInput = courseEntry.querySelector("td:nth-child(1) input");
+        const courseNameText =
+            courseEntry.querySelector("td:nth-child(1)")?.textContent;
 
-            const inputString = courseNameInput ? courseNameInput.value : courseNameText;
+        const inputString = courseNameInput
+            ? courseNameInput.value
+            : courseNameText;
 
-            const regex = /(.+?)\s*[(\uff08(]*([\w\d\s]+?)[)\uff09)]*\s*$/;
-            const match = inputString.match(regex);
+        const regex = /(.+?)\s*[(\uff08(]*([\w\d\s]+?)[)\uff09)]*\s*$/;
+        const match = inputString.match(regex);
 
-            let name = "";
-            let code = "";
+        let name = "";
+        let code = "";
 
-            if (match) {
-                name = match[1].trim();
-                code = match[2].trim();
-            }else{
-              name = inputString.trim();
-              code = inputString.trim();
-            }
-            let teacher =
-                courseEntry.querySelector("td:nth-child(2) input")?.value ||
-                courseEntry.querySelector("td:nth-child(2)").textContent;
-             teacher = teacher ? teacher.trim().replace(/\s+/g, ' ') : "";
-            const note = courseEntry.querySelector("td:nth-child(3) input").value;
+        if (match) {
+            name = match[1].trim();
+            code = match[2].trim();
+        } else {
+            name = inputString.trim();
+            code = inputString.trim();
+        }
+        let teacher =
+            courseEntry.querySelector("td:nth-child(2) input")?.value ||
+            courseEntry.querySelector("td:nth-child(2)").textContent;
+        teacher = teacher ? teacher.trim().replace(/\s+/g, " ") : "";
+        const note = courseEntry.querySelector("td:nth-child(3) input").value;
 
-            courses.push({
-                id: parseInt(code),
-                name: name,
-                teacher: teacher,
-                category: "自定义课程",
-                source: 1,
-                note: note,
-            });
+        courses.push({
+            id: parseInt(code),
+            name: name,
+            teacher: teacher,
+            category: "自定义课程",
+            source: 1,
+            note: note,
         });
-     const grabberConfig = {
+    });
+    const grabberConfig = {
         startAt: startTimeInput ? new Date(startTimeInput).toISOString() : null,
         advanceTime: parseInt(offsetInput),
+        delay: `PT${parseFloat(delayInput) || 0.5}S`,
         courses: courses,
     };
-      localStorage.setItem("grabberConfig", JSON.stringify(grabberConfig));
-        const grabberTask = {
-            account: {
-                session_id: session_id,
+    localStorage.setItem("grabberConfig", JSON.stringify(grabberConfig));
+    const grabberTask = {
+        account: {
+            session_id: session_id,
+        },
+        config: {
+            delay: grabberConfig.delay,
+            start_at: grabberConfig.startAt,
+            retry: true,
+        },
+        courses: courses,
+    };
+    let response;
+    if (tasks && tasks.length > 0) {
+        response = await fetch(`${API_BASE_URL}/grabber/${tasks[0].key}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
             },
-            config: {
-                delay: "PT0.5S",
-                start_at: grabberConfig.startAt,
-                retry: true,
+            body: JSON.stringify(grabberTask),
+        });
+    } else {
+        response = await fetch(`${API_BASE_URL}/grabber/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
             },
-            courses: courses,
-        };
-        let response;
-          if (tasks && tasks.length > 0) {
-               response = await fetch(`${API_BASE_URL}/grabber/${tasks[0].key}`, {
-                  method: "PUT",
-                  headers: {
-                      "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify(grabberTask),
-              });
-          } else {
-              response = await fetch(`${API_BASE_URL}/grabber/`, {
-                  method: "POST",
-                  headers: {
-                      "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify(grabberTask),
-              });
-          }
-    
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-             const data = await response.json();
-                if (data.error) {
-                    showDialog("错误", data.error);
-                       return
-                }
-          await  fetchTasks();
-        if(show_dialog){
-            showDialog("信息", "配置保存成功");
-        }
+            body: JSON.stringify(grabberTask),
+        });
+    }
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    if (data.error) {
+        showDialog("错误", data.error);
+        return;
+    }
+    await fetchTasks();
+    if (show_dialog) {
+        showDialog("信息", "配置保存成功");
+    }
 }
 
 // 保存抢课配置功能
 async function saveGrabCourseConfig() {
-      await saveGrabberTask()
-      document.querySelector("#config-dialog").close();
+    await saveGrabberTask();
+    document.querySelector("#config-dialog").close();
 }
 
 function openConfigDialog() {
@@ -697,11 +734,14 @@ function openConfigDialog() {
             courses: [],
             startAt: null,
             advanceTime: 0,
+            delay: "PT0.5S",
         };
     }
 
     const startTimeInput = document.getElementById("start-time-config");
     const offsetInput = document.getElementById("offset-config");
+    const delayInput = document.getElementById("delay-config");
+    document.getElementById("cookie-readonly").value = session_id;
     if (grabberConfig.startAt) {
         startTimeInput.value = new Date(grabberConfig.startAt)
             .toISOString()
@@ -710,6 +750,7 @@ function openConfigDialog() {
         startTimeInput.value = null;
     }
     offsetInput.value = grabberConfig.advanceTime;
+    delayInput.value = parseFloat(grabberConfig.delay?.slice(2, -1)) || 0.5;
 
     loadConfigCourses();
     document.getElementById("config-dialog").showModal();

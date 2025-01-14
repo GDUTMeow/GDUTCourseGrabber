@@ -91,10 +91,16 @@
             </div>    
             <div class="dialog-content">
                 <div class="grab-course-config">
-                    <label for="start-time-config">抢课开始时间:</label>
+                     <label for="cookie-readonly">JSESSIONID</label>
+                     <input type="text" id="cookie-readonly" name="cookie-readonly"  readonly>
+                    <label for="delay-config">延迟 (秒):</label>
+                    <input type="number" class="offset" id="delay-config" name="delay" min="0" value="0">
+                    <br>
+                     <label for="start-time-config">抢课开始时间:</label>
                     <input type="datetime-local" id="start-time-config" name="start_time">
                     <label for="offset-config">提前抢课时间 (秒):</label>
                     <input type="number" class="offset" id="offset-config" name="offset" min="0" value="0">
+                   
                     <br><br>
                 </div>
             </div>

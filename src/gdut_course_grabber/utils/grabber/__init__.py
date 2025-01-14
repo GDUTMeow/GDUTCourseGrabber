@@ -108,6 +108,7 @@ class GrabberTaskManager:
         """
 
         self._grabbers[id].task = task
+        self._save_tasks()
         self.reset_task(id)
 
     def destroy_task(self, id: int) -> None:

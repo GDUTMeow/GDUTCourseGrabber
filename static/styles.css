@@ -84,60 +84,106 @@ th {
     max-height: 200px;
 }
 
+/* 对话框样式 */
 .dialog {
     border: none;
     border-radius: 8px;
-    margin: 0 auto;
-    padding: 20px;
+    max-width: 80%;
+    width: auto; /* 根据内容动态调整宽度 */
+    padding: 0; /* 内部 padding 由 .dialog-body 控制 */
     position: fixed;
-    top: -100%;
-    left: 20%;
+    left: 50%; /* 水平居中 */
     transform: translateX(-50%);
     animation: slideIn 0.3s forwards;
+    max-height: 90vh; /* 保证顶部和底部各留出3%的空位 */
+    background-color: #fff; /* 确保对话框背景为白色 */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
+    z-index: 1001; /* 确保对话框位于遮罩层之上 */
 }
 
+/* 遮罩层样式 */
+.dialog::backdrop {
+    background: rgba(0, 0, 0, 0.5); /* 半透明黑色背景 */
+    z-index: 1000; /* 确保遮罩层位于其他内容之上 */
+}
+
+/* 滑入动画 */
 @keyframes slideIn {
     from {
-        top: -100%;
+        transform: translate(-50%, -20px); /* 从略高的位置滑入 */
+        opacity: 0;
     }
-
     to {
-        top: 10%;
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
     }
 }
 
-.dialog .dialog-header {
-    width: 400px;
-    padding: 10px 0;
+/* 对话框主体 */
+.dialog-body {
     display: flex;
-    border-bottom: 1px solid #eee;
-}
-
-.dialog .dialog-header .dialog-title {
+    flex-direction: column;
+    height: 100%;
+    padding: 20px; /* 可根据需要调整 */
+    box-sizing: border-box;
     flex: 1;
-    font-size: 20px;
+    overflow: hidden;
 }
 
-.dialog .dialog-content {
+/* 对话框头部 */
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     border-bottom: 1px solid #eee;
-    padding: 20px 0;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    flex-shrink: 0; /* 防止头部缩小 */
+}
+
+/* 对话框标题 */
+.dialog-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    flex: 1; /* 使标题占据可用空间 */
+}
+
+/* 关闭按钮样式 */
+.dialog-close {
+    font-size: 1.5em;
+    cursor: pointer;
+    padding-left: 10px;
+}
+
+/* 对话框内容 */
+.dialog-content {
+    flex: 1;
+    overflow-y: auto; /* 内容超过时显示滚动条 */
     font-size: 15px;
 }
 
-.dialog .dialog-header .dialog-close {
-    width: 50px;
-    font-size: 23px;
-    text-align: right;
-    cursor: pointer;
+/* 对话框底部（用于确认对话框按钮） */
+.dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    flex-shrink: 0; /* 防止底部缩小 */
 }
 
-.dialog::backdrop {
-    position: fixed;
-    top: 0px;
-    right: 0px;
-    bottom: 0px;
-    left: 0px;
-    background: rgba(0, 0, 0, 0.2);
+/* 响应式调整 */
+@media (max-width: 600px) {
+    .dialog {
+        max-width: 90%;
+    }
+    .dialog-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .dialog-close {
+        align-self: flex-end;
+        padding-left: 0;
+    }
 }
 
 .pagination {
@@ -196,8 +242,10 @@ input[readonly] {
 }
 
 .grab-course-config {
+    display: flex;
     align-items: center;
     gap: 10px;
+    flex-wrap: wrap; /* 允许换行，适应小屏幕 */
 }
 
 .grab-course-config label {
@@ -212,7 +260,6 @@ input[readonly] {
     border: 1px solid #ddd;
     width: 200px;
     margin-right: 10px;
-    /* margin-left: 10px; */
 }
 
 .grab-course-config button {

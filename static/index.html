@@ -6,19 +6,115 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GDUT抢课助手 | GamerNoTitle</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .course-card {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .grab-course-config {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .grab-course-config label {
+            white-space: nowrap;
+        }
+
+        .grab-course-config input[type="datetime-local"],
+        .grab-course-config input[type="number"] {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            width: 200px;
+        }
+
+        .add-course-btn {
+            padding: 8px 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .add-course-btn:hover {
+            background: #218838;
+        }
+
+        #config-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        #config-table,
+        #config-table th,
+        #config-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        #config-table th {
+            background-color: #f2f2f2;
+        }
+
+        input[readonly] {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 
 <body>
-    <!-- 对话框定义保持不变 -->
     <dialog id="dialog" class="dialog">
         <div class="dialog-body">
             <div class="dialog-header">
                 <div class="dialog-title"></div>
-                <div class="dialog-close" onclick="document.querySelector('#dialog').close()">&times;</div>
+                <div class="dialog-close" onclick="document.querySelector('#dialog').close()">×</div>
             </div>
             <div class="dialog-content"></div>
+        </div>
+    </dialog>
+    <dialog id="config-dialog" class="config-dialog">
+        <div class="config-dialog-body">
+            <div class="dialog-header">
+                <div class="dialog-title">程序配置</div>
+                <div class="dialog-close" onclick="document.querySelector('#config-dialog').close()">×</div>
+            </div>    
+            <div class="dialog-content">
+                <div class="grab-course-config">
+                    <label for="start-time-config">抢课开始时间:</label>
+                    <input type="datetime-local" id="start-time-config" name="start_time">
+                    <label for="offset-config">提前抢课时间 (秒):</label>
+                    <input type="number" class="offset" id="offset-config" name="offset" min="0" value="0">
+                    <br><br>
+                </div>
+            </div>
+            <h2>当前课程列表</h2>
+            <button type="button" class="add-course-btn" onclick="addCourseEntry()">添加自定义课程 +</button>
+            <p>添加自定义课程时，课程名称(代码)框请按照“课程名称 代码“的方式填写（中间用空格隔开），否则无法正确识别</p>
+            </p>
+            <table id="config-table">
+                <thead>
+                    <tr>
+                        <th>课程名称(代码)</th>
+                        <th>授课老师</th>
+                        <th>备注</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <button type="button" class="btn" id="save-config-btn">保存配置</button>
         </div>
     </dialog>
     <dialog id="confirm-dialog" class="dialog confirm">
@@ -32,44 +128,17 @@
         </div>
     </dialog>
     <div class="container">
-        <img src="{{ url_for('static', filename='favicon.png') }}" height="200px" width="200px"></img>
+        <img src="/favicon.png" height="200px" width="200px"></img>
         <h1>GDUT抢课助手：配置管理</h1>
         <p>Github开源地址：<a href="https://github.com/GDUTMeow/GDUTCourseGrabber"
                 target="_blank">https://github.com/GDUTMeow/GDUTCourseGrabber</a></p>
         <br>
-        <form id="config-form" action="{{ url_for('update_config') }}" method="post">
-            <div class="form-group">
-                <label for="cookie">Cookie:</label>
-                <input type="text" id="cookie" name="cookie" value="{{ config.account.cookie }}" required>
-                <button type="button" class="btn" id="fetch-courses-btn">获取课程列表</button>
-            </div>
-            <h3>已选课程列表</h3>
-            <p>删除任意一门课程后，请点击更新配置来刷新配置文件，否则配置不做保存！</p>
-            <div id="courses-container">
-                {% for course in config.courses %}
-                <div class="course-entry {% if course.preset %}preset{% endif %}">
-                    <input type="text" name="kcrwdm" placeholder="课程ID" value="{{ course.kcrwdm }}" required {% if
-                        course.preset %}readonly{% endif %}>
-                    <input type="text" name="kcmc" placeholder="课程名称" value="{{ course.kcmc }}" required {% if
-                        course.preset %}readonly{% endif %}>
-                    <input type="text" name="teacher" placeholder="老师名字" value="{{ course.teacher }}" required {% if
-                        course.preset %}readonly{% endif %}>
-                    <input type="text" name="remark" placeholder="备注" value="{{ course.remark }}">
-                    {% if course.preset %}
-                    <input type="hidden" name="preset" value="true">
-                    <button type="button" class="btn save-remark"
-                        onclick="saveRemark({{ course.kcrwdm }})">保存备注</button>
-                    {% else %}
-                    <input type="hidden" name="preset" value="false">
-                    {% endif %}
-                    <button type="button" class="btn remove-course" onclick="this.parentElement.remove()">-</button>
-                </div>
-                {% endfor %}
-            </div>
-            <button type="button" class="btn add-course">添加自定义课程 +</button>
-            <button type="submit" class="btn">更新配置</button>
-        </form>
-
+        <div class="form-group">
+            <label for="cookie">JSESSIONID</label>
+            <input type="text" id="cookie" name="cookie" required>
+            <button type="button" class="btn" id="fetch-courses-btn">获取课程列表</button>
+        </div>
+        <button type="button" class="btn" onclick="openConfigDialog()">查看/编辑配置</button>
         <h3>可选课程列表</h3>
         <p>强烈建议先去点击详细信息看看你要选择的课程会不会跟你的课表冲突再来选择！！！需要筛选的话，把下面的数量调成1000，然后用<kbd>Ctrl</kbd>+<kbd>F</kbd>来搜索</p>
         <div id="available-courses">
@@ -80,38 +149,17 @@
                         <th>课程名称(学分)</th>
                         <th>注意事项</th>
                         <th>老师名字</th>
-                        <th>人数限制</th>
+                        <th>已选/上限</th>
                         <th>操作</th>
                     </tr>
                 </thead>
                 <tbody id="available-courses-list">
-                    {% for course in available_courses %}
-                    <tr>
-                        <td>{{ course.kcrwdm }}</td>
-                        <td>{{ course.kcmc }}({{ course.xf }}分)</td>
-                        <td>{{ course.time }}</td>
-                        <td>{{ course.teamx }}</td>
-                        <td>{{ course.pkrs }}</td>
-                        <td>
-                            <form action="{{ url_for('add_course') }}" method="post">
-                                <input type="hidden" name="kcrwdm" value="{{ course.kcrwdm }}">
-                                <input type="hidden" name="kcmc" value="{{ course.kcmc }}({{ course.xf }})">
-                                <input type="hidden" name="teacher" value="{{ course.teamx or '未知' }}">
-                                <input type="hidden" name="preset" value="true">
-                                <input type="hidden" name="remark" value="">
-                                <button type="submit" class="btn">添加</button>
-                                <button type="button" class="btn show-detail"
-                                    onclick="showDetail({{ course.kcrwdm }})">详细信息</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
                 </tbody>
             </table>
             <div class="pagination">
-                <button class="btn page-btn" id="prev-page" disabled>&lt;</button>
+                <button class="btn page-btn" id="prev-page" disabled><</button>
                 <span id="page-info">第 <span id="current-page">1</span> 页，共 <span id="total-pages">1</span> 页</span>
-                <button class="btn page-btn" id="next-page">&gt;</button>
+                <button class="btn page-btn" id="next-page">></button>
                 <select id="page-size" class="page-size-select">
                     <option value="10">10条/页</option>
                     <option value="20">20条/页</option>
@@ -123,15 +171,6 @@
         </div>
 
         <br>
-        <div class="grab-course-config">
-            <label for="start-time">抢课开始时间:</label>
-            <input type="datetime-local" id="start-time" name="start_time">
-
-            <label for="offset">提前抢课时间 (秒):</label>
-            <input type="number" class="offset" id="offset" name="offset" min="0" value="300">
-
-            <button type="button" class="btn" id="save-config-btn">保存配置</button>
-        </div>
         <div class="control-buttons">
             <button type="button" class="btn" id="start-qk-btn">开始抢课</button>
             <button type="button" class="btn" id="stop-qk-btn">停止抢课</button>
@@ -142,7 +181,7 @@
             <pre id="log-container">{{ logs | safe }}</pre>
         </div>
     </div>
-    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+    <script src="scripts.js"></script>
 </body>
 
 </html>

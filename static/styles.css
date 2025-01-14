@@ -96,6 +96,33 @@ th {
     animation: slideIn 0.3s forwards;
 }
 
+.config-dialog {
+    border: none;
+    border-radius: 8px;
+    animation: fadeIn 0.3s forwards;
+    padding: 20px;
+    height: 90%;
+}
+
+.config-dialog .dialog-header {
+    width: 100%;
+    padding: 10px 0;
+    display: flex;
+    border-bottom: 1px solid #eee;
+}
+
+.config-dialog .dialog-header .dialog-title {
+    flex: 1;
+    font-size: 20px;
+}
+
+.cnofig-dialog .dialog-header .dialog-close {
+    width: 50px;
+    font-size: 23px;
+    text-align: right;
+    cursor: pointer;
+}
+
 @keyframes slideIn {
     from {
         top: -100%;
@@ -103,6 +130,16 @@ th {
 
     to {
         top: 10%;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
     }
 }
 
@@ -190,19 +227,23 @@ input[readonly] {
 .control-buttons {
     display: flex;
     align-items: center;
-    gap: 20px; /* 调整元素间距 */
-    flex-wrap: wrap; /* 允许换行，适应小屏幕 */
+    gap: 20px;
+    /* 调整元素间距 */
+    flex-wrap: wrap;
+    /* 允许换行，适应小屏幕 */
     margin-top: 20px;
 }
 
 .grab-course-config {
     align-items: center;
     gap: 10px;
+    margin-top: 20px;
 }
 
 .grab-course-config label {
     margin-right: 5px;
-    white-space: nowrap; /* 防止标签换行 */
+    white-space: nowrap;
+    /* 防止标签换行 */
 }
 
 .grab-course-config input[type="datetime-local"],
@@ -217,7 +258,8 @@ input[readonly] {
 
 .grab-course-config button {
     padding: 8px 15px;
-    background: #28a745; /* 使用绿色按钮 */
+    background: #28a745;
+    /* 使用绿色按钮 */
     color: white;
     border: none;
     border-radius: 4px;
@@ -225,7 +267,8 @@ input[readonly] {
 }
 
 .grab-course-config button:hover {
-    background: #218838; /* 深绿色按钮 */
+    background: #218838;
+    /* 深绿色按钮 */
 }
 
 .control-buttons .btn {
@@ -244,4 +287,8 @@ input[readonly] {
 
 .offset {
     width: 200px;
+}
+
+#config-table td:nth-child(4) {
+    width: 10px;
 }

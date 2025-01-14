@@ -172,3 +172,8 @@ cython_debug/
 
 # User data
 data/
+
+# Old data
+config.json
+app.build
+app.dist

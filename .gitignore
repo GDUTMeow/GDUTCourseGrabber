@@ -175,5 +175,7 @@ data/
 
 # Old data
 config.json
-app.build
-app.dist
+
+# Artifacts
+*.build
+*.dist

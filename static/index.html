@@ -35,9 +35,14 @@
                 <input type="text" id="session_id" name="session_id" placeholder="请输入JSESSIONID" required>
                 <button type="button" class="btn" id="fetch-courses-btn" onclick="fetchCourses()">获取课程列表</button>
             </div>
-            <h3>当前配置</h3>
-            <p>点击下面按钮进入配置查看及修改页面！</p>
-            <button type="button" class="config-get-btn" id="fetch-config-btn">获取并修改当前配置</button>
+            <h3>已选课程列表</h3>
+            <p>删除任意一门课程后，请点击更新配置来刷新配置文件，否则配置不做保存！</p>
+            <div id="courses-container">
+                <!-- 已选课程列表，需要访问 GET /api/grabber/ 获取 -->
+            </div>
+            <button type="button" class="btn add-course">添加自定义课程 +</button>
+            <button type="button" class="btn" id="fetch-config-btn">修改当前配置</button>
+            <button type="submit" class="btn">更新配置</button>
         </form>
 
         <h3>可选课程列表</h3>
@@ -73,7 +78,7 @@
         </div>
 
         <br>
-        <!-- <div class="grab-course-config">
+        <div class="grab-course-config">
             <label for="start-time">抢课开始时间:</label>
             <input type="datetime-local" id="start-time" name="start_time">
 
@@ -81,7 +86,7 @@
             <input type="number" class="offset" id="offset" name="offset" min="0" value="300">
 
             <button type="button" class="btn" id="save-config-btn">保存配置</button>
-        </div> -->
+        </div>
         <div class="control-buttons">
             <button type="button" class="btn" id="start-qk-btn">开始抢课</button>
             <button type="button" class="btn" id="stop-qk-btn">停止抢课</button>

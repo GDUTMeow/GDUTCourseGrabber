@@ -35,7 +35,7 @@ input[type="number"] {
 
 .btn {
     padding: 8px 15px;
-    background: #14a44d;
+    background: #007bff;
     color: white;
     border: none;
     border-radius: 4px;
@@ -44,7 +44,7 @@ input[type="number"] {
 }
 
 .btn:hover {
-    background: #10833e;
+    background: #0056b3;
 }
 
 .course-entry {
@@ -97,6 +97,7 @@ th {
     animation: slideIn 0.3s forwards;
     max-height: 90vh; /* 保证顶部和底部各留出3%的空位 */
     background-color: #fff; /* 确保对话框背景为白色 */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
     z-index: 1001; /* 确保对话框位于遮罩层之上 */
 }
 
@@ -290,34 +291,4 @@ input[readonly] {
 
 .offset {
     width: 200px;
-}
-
-.config-get-btn {
-    padding: 8px 15px;
-    background: #50abc8;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    margin-top: 10px;
-    width: 100%;
-    padding-top: 20px;
-    padding-bottom: 20px;
-}
-
-.add-course-btn {
-    padding: 8px 15px;
-    background: #cd9118;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.add-course-btn::hover {
-    background: #d9991a;
-}
-
-#config-table {
-    width: 80vw;
 }

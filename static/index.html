@@ -6,42 +6,67 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GDUT抢课助手 | GamerNoTitle</title>
-    <link rel="icon" type="image/png" href="/favicon.png">
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 
 <body>
-    <!-- 主对话框 -->
+    <!-- 对话框定义保持不变 -->
     <dialog id="dialog" class="dialog">
         <div class="dialog-body">
             <div class="dialog-header">
-                <div class="dialog-title">title</div>
-                <div class="dialog-close" id="dialog-close">&times;</div>
+                <div class="dialog-title"></div>
+                <div class="dialog-close" onclick="document.querySelector('#dialog').close()">&times;</div>
             </div>
-            <div class="dialog-content">
-                <!-- 动态内容 -->
-            </div>
+            <div class="dialog-content"></div>
         </div>
     </dialog>
-
+    <dialog id="confirm-dialog" class="dialog confirm">
+        <div class="dialog-body">
+            <div class="dialog-header">
+                <div class="dialog-title"></div>
+            </div>
+            <div class="dialog-content"></div>
+            <button class="btn" id="confirm-dialog-yes">是</button>
+            <button class="btn" id="confirm-dialog-no">否</button>
+        </div>
+    </dialog>
     <div class="container">
-        <img src="/favicon.png" height="200px" width="200px" alt="Logo">
+        <img src="{{ url_for('static', filename='favicon.png') }}" height="200px" width="200px"></img>
         <h1>GDUT抢课助手：配置管理</h1>
-        <p>Github开源地址：<a href="https://github.com/GDUTMeow/GDUTCourseGrabber" target="_blank">https://github.com/GDUTMeow/GDUTCourseGrabber</a></p>
+        <p>Github开源地址：<a href="https://github.com/GDUTMeow/GDUTCourseGrabber"
+                target="_blank">https://github.com/GDUTMeow/GDUTCourseGrabber</a></p>
         <br>
-        <form id="config-form" method="post">
+        <form id="config-form" action="{{ url_for('update_config') }}" method="post">
             <div class="form-group">
-                <label for="session_id">JSESSIONID:</label>
-                <input type="text" id="session_id" name="session_id" placeholder="请输入JSESSIONID" required>
-                <button type="button" class="btn" id="fetch-courses-btn" onclick="fetchCourses()">获取课程列表</button>
+                <label for="cookie">Cookie:</label>
+                <input type="text" id="cookie" name="cookie" value="{{ config.account.cookie }}" required>
+                <button type="button" class="btn" id="fetch-courses-btn">获取课程列表</button>
             </div>
             <h3>已选课程列表</h3>
             <p>删除任意一门课程后，请点击更新配置来刷新配置文件，否则配置不做保存！</p>
             <div id="courses-container">
-                <!-- 已选课程列表，需要访问 GET /api/grabber/ 获取 -->
+                {% for course in config.courses %}
+                <div class="course-entry {% if course.preset %}preset{% endif %}">
+                    <input type="text" name="kcrwdm" placeholder="课程ID" value="{{ course.kcrwdm }}" required {% if
+                        course.preset %}readonly{% endif %}>
+                    <input type="text" name="kcmc" placeholder="课程名称" value="{{ course.kcmc }}" required {% if
+                        course.preset %}readonly{% endif %}>
+                    <input type="text" name="teacher" placeholder="老师名字" value="{{ course.teacher }}" required {% if
+                        course.preset %}readonly{% endif %}>
+                    <input type="text" name="remark" placeholder="备注" value="{{ course.remark }}">
+                    {% if course.preset %}
+                    <input type="hidden" name="preset" value="true">
+                    <button type="button" class="btn save-remark"
+                        onclick="saveRemark({{ course.kcrwdm }})">保存备注</button>
+                    {% else %}
+                    <input type="hidden" name="preset" value="false">
+                    {% endif %}
+                    <button type="button" class="btn remove-course" onclick="this.parentElement.remove()">-</button>
+                </div>
+                {% endfor %}
             </div>
             <button type="button" class="btn add-course">添加自定义课程 +</button>
-            <button type="button" class="btn" id="fetch-config-btn">修改当前配置</button>
             <button type="submit" class="btn">更新配置</button>
         </form>
 
@@ -60,7 +85,27 @@
                     </tr>
                 </thead>
                 <tbody id="available-courses-list">
-                    <!-- 可选课程列表，通过访问 GET /api/eas/courses 获取 -->
+                    {% for course in available_courses %}
+                    <tr>
+                        <td>{{ course.kcrwdm }}</td>
+                        <td>{{ course.kcmc }}({{ course.xf }}分)</td>
+                        <td>{{ course.time }}</td>
+                        <td>{{ course.teamx }}</td>
+                        <td>{{ course.pkrs }}</td>
+                        <td>
+                            <form action="{{ url_for('add_course') }}" method="post">
+                                <input type="hidden" name="kcrwdm" value="{{ course.kcrwdm }}">
+                                <input type="hidden" name="kcmc" value="{{ course.kcmc }}({{ course.xf }})">
+                                <input type="hidden" name="teacher" value="{{ course.teamx or '未知' }}">
+                                <input type="hidden" name="preset" value="true">
+                                <input type="hidden" name="remark" value="">
+                                <button type="submit" class="btn">添加</button>
+                                <button type="button" class="btn show-detail"
+                                    onclick="showDetail({{ course.kcrwdm }})">详细信息</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
             <div class="pagination">
@@ -97,8 +142,7 @@
             <pre id="log-container">{{ logs | safe }}</pre>
         </div>
     </div>
-
-    <script src="/scripts.js"></script>
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
 </body>
 
 </html>

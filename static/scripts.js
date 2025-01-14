@@ -1,69 +1,41 @@
 const showDialog = (title, msg) => {
     const dialog = document.querySelector('#dialog');
-    const dialogTitle = dialog.querySelector('.dialog-title');
-    const dialogContent = dialog.querySelector('.dialog-content');
-    const closeButton = document.getElementById('dialog-close');
-
+    const dialogTitle = document.querySelector('#dialog .dialog-title');
+    const dialogBody = document.querySelector('#dialog .dialog-content');
     dialogTitle.textContent = title;
-    dialogContent.innerHTML = msg;
-
-    // 显示对话框
-    if (typeof dialog.showModal === "function") {
-        dialog.showModal();
-        document.body.style.overflow = 'hidden'; // 禁用背景滚动
-    } else {
-        alert("对不起，您的浏览器不支持 <dialog> 元素。");
-    }
-
-    // 关闭按钮事件
-    closeButton.onclick = () => {
-        dialog.close();
-        document.body.style.overflow = 'auto'; // 恢复背景滚动
-    };
+    dialogBody.innerHTML = msg;
+    dialog.showModal();
 }
 
 const showConfirmDialog = (title, msg) => {
     const dialog = document.querySelector('#confirm-dialog');
-    const dialogTitle = dialog.querySelector('.dialog-title');
-    const dialogContent = dialog.querySelector('.dialog-content');
-    const yesButton = document.getElementById('confirm-dialog-yes');
-    const noButton = document.getElementById('confirm-dialog-no');
-    const closeButton = document.getElementById('confirm-dialog-close');
-
-    dialogTitle.textContent = title;
-    dialogContent.textContent = msg;
-
-    return new Promise((resolve) => {
-        const cleanUp = () => {
-            yesButton.removeEventListener('click', onYes);
-            noButton.removeEventListener('click', onNo);
-            closeButton.removeEventListener('click', onNo);
+    const dialogTitle = document.querySelector('#confirm-dialog .dialog-title');
+    const dialogBody = document.querySelector('#confirm-dialog .dialog-content');
+    const yes = document.querySelector('#confirm-dialog-yes');
+    const no = document.querySelector('#confirm-dialog-no');
+    const promise = new Promise(res => {
+        const yesCallback = () => {
+            res(true);
+            clearCallback();
+        };
+        const noCallback = () => {
+            res(false);
+            clearCallback();
+        };
+        const clearCallback = () => {
+            console.log('clear callback');
+            yes.removeEventListener('click', yesCallback);
+            no.removeEventListener('click', noCallback);
             dialog.close();
-            document.body.style.overflow = 'auto'; // 恢复背景滚动
-        };
-
-        const onYes = () => {
-            resolve(true);
-            cleanUp();
-        };
-
-        const onNo = () => {
-            resolve(false);
-            cleanUp();
-        };
-
-        yesButton.addEventListener('click', onYes);
-        noButton.addEventListener('click', onNo);
-        closeButton.addEventListener('click', onNo);
-
-        // 显示对话框
-        if (typeof dialog.showModal === "function") {
-            dialog.showModal();
-            document.body.style.overflow = 'hidden'; // 禁用背景滚动
-        } else {
-            alert("对不起，您的浏览器不支持 <dialog> 元素。");
         }
+        yes.addEventListener('click', yesCallback);
+        no.addEventListener('click', noCallback);
     });
+    
+    dialogTitle.textContent = title;
+    dialogBody.textContent = msg;
+    dialog.showModal();
+    return promise;
 }
 
 // 添加分页相关的全局变量
@@ -85,8 +57,8 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById('prev-page').addEventListener('click', () => {
         if (currentPage > 1) {
             currentPage--;
-            fetchCourses();
             displayCurrentPage();
+            updatePagination();
         }
     });
 
@@ -94,23 +66,17 @@ document.addEventListener("DOMContentLoaded", function () {
         const totalPages = Math.ceil(allCourses.length / pageSize);
         if (currentPage < totalPages) {
             currentPage++;
-            fetchCourses();
             displayCurrentPage();
+            updatePagination();
         }
     });
 
     document.getElementById('page-size').addEventListener('change', (e) => {
         pageSize = parseInt(e.target.value);
         currentPage = 1; // 重置到第一页
-        fetchCourses();
         displayCurrentPage();
         updatePagination();
     });
-
-    const storedSessionId = localStorage.getItem('sessionId');
-    if (storedSessionId) {
-        document.getElementById('session_id').value = storedSessionId;
-    }
 });
 
 function addCourseEntry() {
@@ -144,38 +110,31 @@ function checkCoursesCount() {
 }
 
 function fetchCourses() {
-    const sessionId = document.getElementById("session_id").value;
-    if (!sessionId) {
-        showDialog('提示', "请先输入 JSESSIONID");
+    const cookie = document.getElementById("cookie").value;
+    if (!cookie) {
+        showDialog('提示', "请先输入 Cookie");
         return;
     }
-    localStorage.setItem('sessionId', sessionId);
-    const url = new URL(window.location.origin + '/api/eas/courses');
-    url.searchParams.append('count', pageSize);
-    url.searchParams.append('page', currentPage);
-    url.searchParams.append('session_id', sessionId);
-
-    fetch(url, {
-        method: 'GET',
-        headers: {
-            'accept': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            showDialog('错误', data.error);
-        } else if (data.data && data.data.length === 0) {
-            showDialog('提示', '成功获取了课程列表，但是课程列表为空');
-        }
-         else {
-            updateAvailableCourses(data.data);
-        }
-    })
-    .catch(error => {
-        console.error('获取课程列表失败:', error);
-        showDialog('错误', '获取课程列表失败，请查看控制台错误信息。');
-    });
+    // showDialog('信息', "正在获取课程，请耐心等待，获取时间视课程量而定");
+    fetch('/fetch_courses', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({ 'cookie': cookie })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                showDialog('错误', data.error);
+            } else {
+                updateAvailableCourses(data.available_courses);
+            }
+        })
+        .catch(error => {
+            console.error('获取课程列表失败:', error);
+            showDialog('错误', '获取课程列表失败，请查看控制台错误信息。');
+        });
 }
 
 function updateAvailableCourses(courses) {
@@ -208,7 +167,7 @@ function displayCurrentPage() {
                     <input type="hidden" name="preset" value="true">
                     <input type="hidden" name="remark" value="">
                     <button type="submit" class="btn">添加</button>
-                    <button type="button" class="btn show-detail" onclick="showDetail('${course.kcrwdm}')">详细信息</button>
+                    <button type="button" class="btn show-detail" onclick="showDetail(${course.kcrwdm})">详细信息</button>
                 </form>
             </td>
         `;
@@ -317,7 +276,7 @@ function startPolling() {
     setInterval(fetchLogs, 500); // 每0.5秒刷新一次
 }
 
-// window.onload = startPolling;
+window.onload = startPolling;
 
 // 保存备注功能
 function saveRemark(kcrwdm) {
@@ -349,6 +308,7 @@ function saveRemark(kcrwdm) {
         });
 }
 
+// 新增：保存抢课配置功能
 function saveGrabCourseConfig() {
     const startTimeInput = document.getElementById("start-time").value;
     const offsetInput = document.getElementById("offset").value;

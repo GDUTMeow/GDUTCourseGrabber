@@ -172,8 +172,3 @@ cython_debug/
 
 # User data
 data/
-
-# Old artifacts and data
-config.json
-app.build
-app.dist

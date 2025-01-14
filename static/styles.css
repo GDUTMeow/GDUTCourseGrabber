@@ -321,8 +321,3 @@ input[readonly] {
 #config-table {
     width: 80vw;
 }
-
-.dialog-content table,
-.dialog-content input {
-    pointer-events: none;
-}

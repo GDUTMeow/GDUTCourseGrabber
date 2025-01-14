@@ -20,12 +20,48 @@ const showDialog = (title, msg) => {
         dialog.close();
         document.body.style.overflow = "auto"; // 恢复背景滚动
     };
+};
 
-    dialog.addEventListener('click', (event) => {
-        if (event.target === dialog || event.target === dialog.querySelector('.dialog-body')) {
+const showConfirmDialog = (title, msg) => {
+    const dialog = document.querySelector("#confirm-dialog");
+    const dialogTitle = dialog.querySelector(".dialog-title");
+    const dialogContent = dialog.querySelector(".dialog-content");
+    const yesButton = document.getElementById("confirm-dialog-yes");
+    const noButton = document.getElementById("confirm-dialog-no");
+    const closeButton = document.getElementById("confirm-dialog-close");
+
+    dialogTitle.textContent = title;
+    dialogContent.textContent = msg;
+
+    return new Promise((resolve) => {
+        const cleanUp = () => {
+            yesButton.removeEventListener("click", onYes);
+            noButton.removeEventListener("click", onNo);
+            closeButton.removeEventListener("click", onNo);
             dialog.close();
             document.body.style.overflow = "auto"; // 恢复背景滚动
-            dialog.style.display = 'flex';
+        };
+
+        const onYes = () => {
+            resolve(true);
+            cleanUp();
+        };
+
+        const onNo = () => {
+            resolve(false);
+            cleanUp();
+        };
+
+        yesButton.addEventListener("click", onYes);
+        noButton.addEventListener("click", onNo);
+        closeButton.addEventListener("click", onNo);
+
+        // 显示对话框
+        if (typeof dialog.showModal === "function") {
+            dialog.showModal();
+            document.body.style.overflow = "hidden"; // 禁用背景滚动
+        } else {
+            alert("对不起，您的浏览器不支持 <dialog> 元素。");
         }
     });
 };
@@ -41,6 +77,10 @@ document.addEventListener("DOMContentLoaded", function () {
         .addEventListener("click", fetchCourses);
     document.getElementById("start-qk-btn").addEventListener("click", start);
     document.getElementById("stop-qk-btn").addEventListener("click", stop);
+    document
+        .getElementById("save-config-btn")
+        .addEventListener("click", saveGrabCourseConfig);
+    checkCoursesCount();
 
     // 添加分页控件的事件监听
     document.getElementById("prev-page").addEventListener("click", () => {
@@ -48,18 +88,16 @@ document.addEventListener("DOMContentLoaded", function () {
             currentPage--;
             fetchCourses();
             displayCurrentPage();
-                }
-                dialogContentContainer.style.display = 'table';
-                if (typeof dialog.showModal === "function") {
-                    dialog.showModal();
-                } else {
-                    alert("对不起，您的浏览器不支持 <dialog> 元素。");
-                }
-            })
-            .catch((error) => {
-                console.error("获取配置失败:", error);
-                showDialog("错误", "获取配置失败，请查看控制台错误信息。");
-            });
+        }
+    });
+
+    document.getElementById("next-page").addEventListener("click", () => {
+        const totalPages = Math.ceil(allCourses.length / pageSize);
+        if (currentPage < totalPages) {
+            currentPage++;
+            fetchCourses();
+            displayCurrentPage();
+        }
     });
 
     document.getElementById("page-size").addEventListener("change", (e) => {
@@ -383,31 +421,29 @@ document
                         : "";
                 }
                 let dialogContent = `
-                <div class="dialog-body">
-                    <div class="grab-course-config">
-                        <label for="start-time-config">抢课开始时间:</label>
-                        <input type="datetime-local" id="start-time-config" name="start_time" value="${startTimeValue}">
-                        <label for="offset-config">提前抢课时间 (秒):</label>
-                        <input type="number" class="offset" id="offset-config" name="offset" min="0" value="${offsetValue}">
-                        <br><br>
-                    </div>
-                    <hr>
-                    <h2>当前课程列表</h2>
-                    <button type="button" class="add-course-btn" onclick="addCourseEntry()">添加自定义课程 +</button>
-                    <table id="config-table">
-                        <thead>
-                            <tr>
-                                <th>课程名称(代码)</th>
-                                <th>授课老师</th>
-                                <th>上课时间/地点</th>
-                                <th>备注</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
+                <div class="grab-course-config">
+                    <label for="start-time-config">抢课开始时间:</label>
+                    <input type="datetime-local" id="start-time-config" name="start_time" value="${startTimeValue}">
+                    <label for="offset-config">提前抢课时间 (秒):</label>
+                    <input type="number" class="offset" id="offset-config" name="offset" min="0" value="${offsetValue}">
+                    <br><br>
                 </div>
+                <hr>
+                <h2>当前课程列表</h2>
+                <button type="button" class="add-course-btn" onclick="addCourseEntry()">添加自定义课程 +</button>
+                <table id="config-table">
+                    <thead>
+                        <tr>
+                            <th>课程名称(代码)</th>
+                            <th>授课老师</th>
+                            <th>上课时间/地点</th>
+                            <th>备注</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
                 `;
                 const dialog = document.querySelector('#dialog');
                 const dialogTitle = dialog.querySelector('.dialog-title');
@@ -435,7 +471,6 @@ document
                         tableBody.appendChild(row);
                     });
                 }
-                dialog.style.display = 'table';
                 if (typeof dialog.showModal === "function") {
                     dialog.showModal();
                 } else {

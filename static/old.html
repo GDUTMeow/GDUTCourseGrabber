@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GDUT抢课助手 | GamerNoTitle</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .course-card {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .grab-course-config {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .grab-course-config label {
+            white-space: nowrap;
+        }
+
+        .grab-course-config input[type="datetime-local"],
+        .grab-course-config input[type="number"] {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            width: 200px;
+        }
+
+        .add-course-btn {
+            padding: 8px 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .add-course-btn:hover {
+            background: #218838;
+        }
+
+        #config-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        #config-table,
+        #config-table th,
+        #config-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        #config-table th {
+            background-color: #f2f2f2;
+        }
+
+        input[readonly] {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <dialog id="dialog" class="dialog">
+        <div class="dialog-body">
+            <div class="dialog-header">
+                <div class="dialog-title"></div>
+                <div class="dialog-close" onclick="document.querySelector('#dialog').close()">×</div>
+            </div>
+            <div class="dialog-content"></div>
+        </div>
+    </dialog>
+    <dialog id="config-dialog" class="config-dialog">
+        <div class="config-dialog-body">
+            <div class="dialog-header">
+                <div class="dialog-title">程序配置</div>
+                <div class="dialog-close" onclick="document.querySelector('#config-dialog').close()">×</div>
+            </div>    
+            <div class="dialog-content">
+                <div class="grab-course-config">
+                     <label for="cookie-readonly">JSESSIONID</label>
+                     <input type="text" id="cookie-readonly" name="cookie-readonly"  readonly>
+                    <label for="delay-config">延迟 (秒):</label>
+                    <input type="number" class="offset" id="delay-config" name="delay" min="0" value="0">
+                    <br>
+                     <label for="start-time-config">抢课开始时间:</label>
+                    <input type="datetime-local" id="start-time-config" name="start_time">
+                    <label for="offset-config">提前抢课时间 (秒):</label>
+                    <input type="number" class="offset" id="offset-config" name="offset" min="0" value="0">
+                   
+                    <br><br>
+                </div>
+            </div>
+            <h2>当前课程列表</h2>
+            <button type="button" class="add-course-btn" onclick="addCourseEntry()">添加自定义课程 +</button>
+            <p>添加自定义课程时，课程名称(代码)框请按照“课程名称 代码“的方式填写（中间用空格隔开），否则无法正确识别</p>
+            </p>
+            <table id="config-table">
+                <thead>
+                    <tr>
+                        <th>课程名称(代码)</th>
+                        <th>授课老师</th>
+                        <th>备注</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <button type="button" class="btn" id="save-config-btn">保存配置</button>
+        </div>
+    </dialog>
+    <dialog id="confirm-dialog" class="dialog confirm">
+        <div class="dialog-body">
+            <div class="dialog-header">
+                <div class="dialog-title"></div>
+            </div>
+            <div class="dialog-content"></div>
+            <button class="btn" id="confirm-dialog-yes">是</button>
+            <button class="btn" id="confirm-dialog-no">否</button>
+        </div>
+    </dialog>
+    <div class="container">
+        <img src="/favicon.png" height="200px" width="200px"></img>
+        <h1>GDUT抢课助手：配置管理</h1>
+        <p>Github开源地址：<a href="https://github.com/GDUTMeow/GDUTCourseGrabber"
+                target="_blank">https://github.com/GDUTMeow/GDUTCourseGrabber</a></p>
+        <br>
+        <div class="form-group">
+            <label for="cookie">JSESSIONID</label>
+            <input type="text" id="cookie" name="cookie" required>
+            <button type="button" class="btn" id="fetch-courses-btn">获取课程列表</button>
+        </div>
+        <button type="button" class="btn" onclick="openConfigDialog()">查看/编辑配置</button>
+        <h3>可选课程列表</h3>
+        <p>强烈建议先去点击详细信息看看你要选择的课程会不会跟你的课表冲突再来选择！！！需要筛选的话，把下面的数量调成1000，然后用<kbd>Ctrl</kbd>+<kbd>F</kbd>来搜索</p>
+        <div id="available-courses">
+            <table>
+                <thead>
+                    <tr>
+                        <th>课程ID</th>
+                        <th>课程名称(学分)</th>
+                        <th>注意事项</th>
+                        <th>老师名字</th>
+                        <th>已选/上限</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="available-courses-list">
+                </tbody>
+            </table>
+            <div class="pagination">
+                <button class="btn page-btn" id="prev-page" disabled><</button>
+                <span id="page-info">第 <span id="current-page">1</span> 页，共 <span id="total-pages">1</span> 页</span>
+                <button class="btn page-btn" id="next-page">></button>
+                <select id="page-size" class="page-size-select">
+                    <option value="10">10条/页</option>
+                    <option value="20">20条/页</option>
+                    <option value="50">50条/页</option>
+                    <option value="100">100条/页</option>
+                    <option value="1000">1000条/页</option>
+                </select>
+            </div>
+        </div>
+
+        <br>
+        <div class="control-buttons">
+            <button type="button" class="btn" id="start-qk-btn">开始抢课</button>
+            <button type="button" class="btn" id="stop-qk-btn">停止抢课</button>
+        </div>
+        <h3>日志</h3>
+        <p>日志只显示最后100行，完整日志请查看程序 logs 目录下的 latest.log</p>
+        <div class="logs" id="log-shell">
+            <pre id="log-container">{{ logs | safe }}</pre>
+        </div>
+    </div>
+    <script src="scripts.js"></script>
+</body>
+
+</html>

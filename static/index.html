@@ -1,193 +1,157 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-cn">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GDUT抢课助手 | GamerNoTitle</title>
-    <link rel="icon" type="image/png" href="/favicon.png">
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        .course-card {
-            background-color: #f9f9f9;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 10px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .grab-course-config {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .grab-course-config label {
-            white-space: nowrap;
-        }
-
-        .grab-course-config input[type="datetime-local"],
-        .grab-course-config input[type="number"] {
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-            width: 200px;
-        }
-
-        .add-course-btn {
-            padding: 8px 15px;
-            background: #28a745;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
-
-        .add-course-btn:hover {
-            background: #218838;
-        }
-
-        #config-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        #config-table,
-        #config-table th,
-        #config-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-
-        #config-table th {
-            background-color: #f2f2f2;
-        }
-
-        input[readonly] {
-            background-color: #e9ecef;
-            cursor: not-allowed;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="styles.css" />
+  <title>GDUT抢课助手 | GamerNoTitle</title>
 </head>
 
 <body>
-    <dialog id="dialog" class="dialog">
-        <div class="dialog-body">
-            <div class="dialog-header">
-                <div class="dialog-title"></div>
-                <div class="dialog-close" onclick="document.querySelector('#dialog').close()">×</div>
-            </div>
-            <div class="dialog-content"></div>
-        </div>
-    </dialog>
-    <dialog id="config-dialog" class="config-dialog">
-        <div class="config-dialog-body">
-            <div class="dialog-header">
-                <div class="dialog-title">程序配置</div>
-                <div class="dialog-close" onclick="document.querySelector('#config-dialog').close()">×</div>
-            </div>    
-            <div class="dialog-content">
-                <div class="grab-course-config">
-                     <label for="cookie-readonly">JSESSIONID</label>
-                     <input type="text" id="cookie-readonly" name="cookie-readonly"  readonly>
-                    <label for="delay-config">延迟 (秒):</label>
-                    <input type="number" class="offset" id="delay-config" name="delay" min="0" value="0">
-                    <br>
-                     <label for="start-time-config">抢课开始时间:</label>
-                    <input type="datetime-local" id="start-time-config" name="start_time">
-                    <label for="offset-config">提前抢课时间 (秒):</label>
-                    <input type="number" class="offset" id="offset-config" name="offset" min="0" value="0">
-                   
-                    <br><br>
+  <s-page theme="auto">
+    <!--抽屉布局-->
+    <s-drawer>
+      <!--左侧抽屉-->
+      <div slot="start" style="width: auto;">
+        <s-navigation mode="rail" onchange="changePanel(this.selectedIndex)">
+          <!--抽屉顶部-->
+          <s-icon-button slot="start" type="filled-tonal">
+            <img src="favicon.png" alt="Logo" style="width: 40px; height: 40px;" />
+          </s-icon-button>
+          <!--抽屉导航0-->
+          <s-navigation-item selected="true">
+            <s-icon name="home" slot="icon"></s-icon>
+            <div slot="text">首页</div>
+          </s-navigation-item>
+          <!--抽屉导航1-->
+          <s-navigation-item>
+            <svg viewBox="0 -960 960 960" slot="icon">
+              <path
+                d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z">
+              </path>
+            </svg>
+            <div slot="text">设置</div>
+          </s-navigation-item>
+          <!--抽屉底部-->
+          <div slot="end" style="display: flex;align-items: flex-end; padding: 16px 0;">
+            <s-dialog>
+              <s-icon-button type="outlined" slot="trigger">
+                <svg viewBox="0 -960 960 960">
+                  <path
+                    d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z">
+                  </path>
+                </svg>
+              </s-icon-button>
+              <div slot="headline" style="margin-top: 16px">关于</div>
+              <div slot="text" style="margin-top: 32px; line-height: 2em;">
+                广东工业大学（GDUT）抢课助手，发挥计算机的力量，让你抢课解放双手，快人一步<br>
+                Github: <a href="https://github.com/GDUTMeow/GDUTCourseGrabber" target="_blank"
+                  style="text-decoration: none; color: #1d1b1e;">GDUTMeow/GDUTCourseGrabber</a><br>
+                以下贡献者不分先后<br>
+                <div style="line-height: 3em;">
+                  <a href="https://github.com/GamerNoTitle" style="text-decoration: none; color: #1d1b1e;"><s-avatar
+                      src="https://avatars.githubusercontent.com/u/28426291"></s-avatar> GamerNoTitle (Pesy
+                    Wu)</a><br>
+                  <a href="https://github.com/ricky8955555" style="text-decoration: none; color: #1d1b1e;"><s-avatar
+                      src="https://avatars.githubusercontent.com/u/24487646"></s-avatar> ricky8955555
+                    (Phrinky)</a><br>
+                  <a href="https://github.com/KeqingMoe" style="text-decoration: none; color: #1d1b1e;"><s-avatar
+                      src="https://avatars.githubusercontent.com/u/59642397"></s-avatar> KeqingMoe (刻晴Moe)</a><br>
+                  <a href="https://github.com/Ron-1337" style="text-decoration: none; color: #1d1b1e;"><s-avatar
+                      src="https://avatars.githubusercontent.com/u/53028934"></s-avatar> Ron-1337 (Ron)</a><br>
                 </div>
+              </div>
+              <s-button type="text" slot="action"> 关闭 </s-button>
+            </s-dialog>
+          </div>
+        </s-navigation>
+      </div>
+      <!--应用栏-->
+      <s-appbar>
+        <!--应用栏-左侧导航按钮-->
+        <s-icon-button slot="navigation" onclick="toggleSidebar()" id="menu-btn" value="1">
+          <svg viewBox="0 -960 960 960">
+            <path d="M640-80 240-480l400-400 71 71-329 329 329 329-71 71Z"></path>
+          </svg>
+        </s-icon-button>
+        <!--应用栏-标题-->
+        <div slot="headline"> GDUT抢课助手 </div>
+        <!--应用栏-操作按钮-->
+        <s-tooltip slot="action">
+          <s-icon-button slot="trigger" onclick="openGithub()">
+            <svg t="1747328466788" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+              p-id="2604" width="200" height="200">
+              <path
+                d="M511.6 76.3C264.3 76.2 64 276.4 64 523.5 64 718.9 189.3 885 363.8 946c23.5 5.9 19.9-10.8 19.9-22.2v-77.5c-135.7 15.9-141.2-73.9-150.3-88.9C215 726 171.5 718 184.5 703c30.9-15.9 62.4 4 98.9 57.9 26.4 39.1 77.9 32.5 104 26 5.7-23.5 17.9-44.5 34.7-60.8-140.6-25.2-199.2-111-199.2-213 0-49.5 16.3-95 48.3-131.7-20.4-60.5 1.9-112.3 4.9-120 58.1-5.2 118.5 41.6 123.2 45.3 33-8.9 70.7-13.6 112.9-13.6 42.4 0 80.2 4.9 113.5 13.9 11.3-8.6 67.3-48.8 121.3-43.9 2.9 7.7 24.7 58.3 5.5 118 32.4 36.8 48.9 82.7 48.9 132.3 0 102.2-59 188.1-200 212.9 23.5 23.2 38.1 55.4 38.1 91v112.5c0.8 9 0 17.9 15 17.9 177.1-59.7 304.6-227 304.6-424.1 0-247.2-200.4-447.3-447.5-447.3z"
+                p-id="2605"></path>
+            </svg>
+          </s-icon-button>
+          访问项目 Github 仓库
+        </s-tooltip>
+      </s-appbar>
+      <!--主视图-->
+      <s-linear-progress indeterminate="true" id="global-loading" class="hidden"></s-linear-progress>
+      <s-scroll-view style="flex-grow: 1">
+        <main style="height: 100%; display: flex;justify-content: center;align-items: center;">
+          <s-dialog showed="false" id="dialog">
+            <div slot="headline" id="dialog-title" style="margin-top: 16px;"> 🟡 荧 </div>
+            <div slot="text" id="dialog-descr" style="margin-top: 32px;">
+              <div align="center">
+                <a href="https://ys.mihoyo.com/" target="_blank"><img
+                    src="https://assets.bili33.top/img/%23Miscellaneous/launch-genshin.jpg" width="75%"></a>
+              </div>
+              <p>面对无法掌控的境遇时，人们总是喟叹自身的无力。</p>
+              <p>但在人生最陡峭的转折处，若有凡人的「渴望」达到极致，神明的视线就将投射而下。</p>
+              <p>这就是「神之眼」，受神认可者所获的外置魔力器官，用以引导元素之力。</p>
+              <p>高天之上是神的领域。「神之眼」的持有者在地上行走，当他们离世时，受选者将升入天空。</p>
+              <p>你来到这个世界以后，经常听人们谈论此事。</p>
+              <p>你自己是得不到「神之眼」的。外界生物不属于世间众生，所以他们往往只能隔岸观火⋯</p>
+              <p>将某一瞬间的渴望贯彻一生，到底是好事还是坏事呢？</p>
+              <p>在你穿行于诸多世界的旅途中，如「神之眼」一样，需要花时间去思考的见闻，还有很多⋯</p>
             </div>
-            <h2>当前课程列表</h2>
-            <button type="button" class="add-course-btn" onclick="addCourseEntry()">添加自定义课程 +</button>
-            <p>添加自定义课程时，课程名称(代码)框请按照“课程名称 代码“的方式填写（中间用空格隔开），否则无法正确识别</p>
-            </p>
-            <table id="config-table">
-                <thead>
-                    <tr>
-                        <th>课程名称(代码)</th>
-                        <th>授课老师</th>
-                        <th>备注</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-            <button type="button" class="btn" id="save-config-btn">保存配置</button>
-        </div>
-    </dialog>
-    <dialog id="confirm-dialog" class="dialog confirm">
-        <div class="dialog-body">
-            <div class="dialog-header">
-                <div class="dialog-title"></div>
+            <s-button slot="action" type="text">确定</s-button>
+          </s-dialog>
+          <s-card id="panel">
+            <div slot="headline">抢课面板</div>
+            <div slot="text">
+              <s-text-field id="cookie" label="JSESSIONID" value="" class="full-width"></s-text-field>
+              <div align="right" style="margin-top: 8px;">
+                <p id="status">当前状态：⚪ 未知</p>
+                <s-button id="save-config-btn" onclick="saveAndLogin()">
+                  <s-circular-progress indeterminate="true" class="hidden"
+                    id="save-config-btn-loading"></s-circular-progress>
+                  保存并登录 </s-button>
+              </div>
+              <s-divider></s-divider>
+              <s-empty id="content-no-content-tip">什么都没有诶？！先登录一下吧 orz</s-empty>
+              <s-table style="overflow: auto; display: block">
+                <s-head>
+                  <s-tr>
+                    <s-th>课程名称</s-th>
+                  </s-tr>
+                </s-head>
+              </s-table>
             </div>
-            <div class="dialog-content"></div>
-            <button class="btn" id="confirm-dialog-yes">是</button>
-            <button class="btn" id="confirm-dialog-no">否</button>
-        </div>
-    </dialog>
-    <div class="container">
-        <img src="/favicon.png" height="200px" width="200px"></img>
-        <h1>GDUT抢课助手：配置管理</h1>
-        <p>Github开源地址：<a href="https://github.com/GDUTMeow/GDUTCourseGrabber"
-                target="_blank">https://github.com/GDUTMeow/GDUTCourseGrabber</a></p>
-        <br>
-        <div class="form-group">
-            <label for="cookie">JSESSIONID</label>
-            <input type="text" id="cookie" name="cookie" required>
-            <button type="button" class="btn" id="fetch-courses-btn">获取课程列表</button>
-        </div>
-        <button type="button" class="btn" onclick="openConfigDialog()">查看/编辑配置</button>
-        <h3>可选课程列表</h3>
-        <p>强烈建议先去点击详细信息看看你要选择的课程会不会跟你的课表冲突再来选择！！！需要筛选的话，把下面的数量调成1000，然后用<kbd>Ctrl</kbd>+<kbd>F</kbd>来搜索</p>
-        <div id="available-courses">
-            <table>
-                <thead>
-                    <tr>
-                        <th>课程ID</th>
-                        <th>课程名称(学分)</th>
-                        <th>注意事项</th>
-                        <th>老师名字</th>
-                        <th>已选/上限</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody id="available-courses-list">
-                </tbody>
-            </table>
-            <div class="pagination">
-                <button class="btn page-btn" id="prev-page" disabled><</button>
-                <span id="page-info">第 <span id="current-page">1</span> 页，共 <span id="total-pages">1</span> 页</span>
-                <button class="btn page-btn" id="next-page">></button>
-                <select id="page-size" class="page-size-select">
-                    <option value="10">10条/页</option>
-                    <option value="20">20条/页</option>
-                    <option value="50">50条/页</option>
-                    <option value="100">100条/页</option>
-                    <option value="1000">1000条/页</option>
-                </select>
-            </div>
-        </div>
+          </s-card>
+          <s-card id="settings" class="hidden">
+            <div slot="headline">程序设置</div>
+            <div slot="text">
 
-        <br>
-        <div class="control-buttons">
-            <button type="button" class="btn" id="start-qk-btn">开始抢课</button>
-            <button type="button" class="btn" id="stop-qk-btn">停止抢课</button>
-        </div>
-        <h3>日志</h3>
-        <p>日志只显示最后100行，完整日志请查看程序 logs 目录下的 latest.log</p>
-        <div class="logs" id="log-shell">
-            <pre id="log-container">{{ logs | safe }}</pre>
-        </div>
-    </div>
-    <script src="scripts.js"></script>
+            </div>
+          </s-card>
+        </main>
+      </s-scroll-view>
+    </s-drawer>
+  </s-page>
+  <script>
+    //safari user-scalable=no
+    document.addEventListener('gesturestart', (event) => event.preventDefault())
+  </script>
+  <script src="https://unpkg.com/sober@1.1.5/dist/sober.min.js"></script>
+  <script src="scripts.js"></script>
 </body>
 
 </html>

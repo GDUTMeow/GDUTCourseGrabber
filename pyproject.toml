@@ -21,4 +21,6 @@ dev = [
     "black>=24.10.0",
     "isort>=5.13.2",
     "pylint>=3.3.3",
+    "nuitka>=2.5.9",
+    "pyinstaller>=6.11.1",
 ]

@@ -179,3 +179,4 @@ config.json
 # Artifacts
 *.build
 *.dist
+scripts

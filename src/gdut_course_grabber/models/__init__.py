@@ -49,6 +49,16 @@ class Course(BaseModel):
     课程分类。
     """
 
+    chosen: int
+    """
+    已选课人数。
+    """
+
+    limit: int
+    """
+    人数上限
+    """
+
     source: CourseSource
     """
     课程来源。

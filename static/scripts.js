@@ -263,7 +263,7 @@ function loadMoreCourses() {
                         course.id,
                         course.teacher,
                         course.category,
-                        course.selected,
+                        course.chosen,
                         course.limit
                     );
                 });
@@ -275,7 +275,7 @@ function loadMoreCourses() {
         });
 }
 
-function addLineToCourseTable(name, id, teacher, category, selected, limit) {
+function addLineToCourseTable(name, id, teacher, category, chosen, limit) {
     const table_body = document.getElementById('content-table-body');
     const table_line = document.createElement('s-tr');
     const operation_td = document.createElement('s-td');
@@ -294,12 +294,12 @@ function addLineToCourseTable(name, id, teacher, category, selected, limit) {
 
     const limit_td = document.createElement('s-td');
     const limit_linear = document.createElement('s-linear-progress');
-    const numSelected = Number(selected);
+    const numSelected = Number(chosen);
     const numLimit = Number(limit);
 
-    if (isNaN(numLimit) || isNaN(numSelected) || numLimit === 0 || limit === "?" || selected === "?") {
+    if (isNaN(numLimit) || isNaN(numSelected) || numLimit === 0 || limit === "?" || chosen === "?") {
         limit_linear.setAttribute('value', '100');
-        limit_td.innerText = `${selected}/${limit}`;
+        limit_td.innerText = `${chosen}/${limit}`;
     } else {
         limit_linear.setAttribute('value', String((numSelected / numLimit) * 100));
         limit_td.innerText = `${numSelected}/${numLimit}`;
@@ -521,7 +521,7 @@ function addTask() {
         config: {
             delay: "PT" + document.getElementById('task-delay').value + "S" || "PT0.5S",
             retry: document.getElementById('task-auto-retry-switch').checked,
-            start_at: new Date(document.getElementById('task-start-time').value).toISOString() || new Date().toISOString(),
+            start_at: new Date(document.getElementById('task-start-time').value.trim()).toISOString() || new Date().toISOString(),
         },
         courses: courses,
     }
@@ -560,22 +560,35 @@ function getTasks() {
     })
 }
 
+function getTaskStatus(taskId) {
+    fetch("/api/grabber/" + taskId + "/status", {
+        method: 'GET'
+    }).then(response => {
+        if (response.ok) {
+            return response.json().status;
+        } else {
+            console.log('获取任务状态失败，服务器返回状态码:', response.status);
+            return false;
+        }
+    })
+}
+
 function flushTaskTable() {
     getTasks().then(data => {
         if (!data) {
             return;
         }
         const table_body = document.getElementById('task-table-body');
-        data.data.forEach(task => {
+        data.data.forEach((task, idx) => {
             const session_id = task.value.account.session_id;
             const courses = task.value.courses;
             const start_time = new Date(task.value.config.start_at).toLocaleString();
             const delay = task.value.config.delay;
             const retry = task.value.config.retry ? '开启' : '关闭';
-            const status = task.status;
+            const status = getTaskStatus(idx)
 
             const course_tags = document.createElement('s-td');
-            courses.foreach(course => {
+            courses.forEach(course => {
                 const course_tag = document.createElement('s-chip');
                 course_tag.innerText = course;
                 course_tag.setAttribute('type', 'outlined');
@@ -586,14 +599,19 @@ function flushTaskTable() {
 
             const operation_td = document.createElement('s-td');
             const opeartion_btn = document.createElement('s-button');
-            if (status === 'running') {
+            if (status === 2) { // 2 -> RUNNING
                 opeartion_btn.innerText = '停止';
             } else {
                 opeartion_btn.innerText = '启动';
-                
             }
             const operation_remove_btn = document.createElement('s-button');
             operation_remove_btn.innerText = '移除';
+            operation_remove_btn.setAttribute('classId', String(idx));
+            operation_remove_btn.setAttribute('onclick', "removeTask(this.getAttribute('classId'))");
+            operation_remove_btn.setAttribute('type', 'outlined');
+            opeartion_btn.style.marginLeft = '8px';
+            operation_td.appendChild(opeartion_btn);
+            operation_td.appendChild(operation_remove_btn);
 
             const table_line = document.createElement('s-tr');
             table_line.appendChild(document.createElement('s-td')).innerText = session_id;
@@ -601,8 +619,10 @@ function flushTaskTable() {
             table_line.appendChild(document.createElement('s-td')).innerText = start_time;
             table_line.appendChild(document.createElement('s-td')).innerText = delay.replace('PT', '').replace('S', ' 秒');
             table_line.appendChild(document.createElement('s-td')).innerText = retry;
-            table_line.appendChild(document.createElement('s-td')).innerText = status;
+            table_line.appendChild(document.createElement('s-td')).innerText = status ? (status === 2 ? "RUNNING" : "WAITING") : "IDLE";
+            table_line.appendChild(operation_td);
 
+            table_body.appendChild(table_line);
         })
     })
 }
@@ -616,7 +636,7 @@ function syncSessionId() {
 
 function verifyTimeFormat(timeString) {
     const regex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
-    if (!regex.test(timeString)) {
+    if (!regex.test(timeString.trim())) {
         document.getElementById('task-start-time').setAttribute('error', 'true');
         return false;
     } else {

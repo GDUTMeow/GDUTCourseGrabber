@@ -6,7 +6,7 @@ import asyncio
 import logging
 from datetime import datetime
 from enum import IntEnum
-from typing import Iterable, Sequence
+from typing import Iterable
 
 from gdut_course_grabber.models import Account, Course, GrabberConfig
 from gdut_course_grabber.utils.eas import AuthorizationFailed, EasClient
@@ -63,7 +63,7 @@ class Grabber:
     """
 
     @property
-    def queue(self) -> Sequence[Course]:
+    def queue(self) -> list[Course]:
         """
         抢课队列。
         """

@@ -7,7 +7,8 @@ from fastapi import APIRouter
 from gdut_course_grabber.api.exc import entity_not_found_error
 from gdut_course_grabber.api.types import ApiResponse, KeyValuePair
 from gdut_course_grabber.context.grabber import grabber_task_manager
-from gdut_course_grabber.models import GrabberTask
+from gdut_course_grabber.core.grabber import GrabberStatus
+from gdut_course_grabber.models import Course, GrabberTask
 from gdut_course_grabber.utils.grabber import GrabberEntry
 
 router = APIRouter()
@@ -91,6 +92,38 @@ def get_task(id: int) -> ApiResponse[GrabberTask]:
 
     entry = _get_grabber_entry(id)
     return ApiResponse(data=entry.task)
+
+
+@router.get("/{id}/queue")
+def get_queue(id: int) -> ApiResponse[list[Course]]:
+    """
+    获取抢课任务队列。
+
+    Args:
+        id (int): 抢课任务 ID。
+
+    Returns:
+        ApiResponse[list[Course]]: 指定 ID 的抢课任务列表。
+    """
+
+    entry = _get_grabber_entry(id)
+    return ApiResponse(data=entry.conductor.queue)
+
+
+@router.get("/{id}/status")
+def get_status(id: int) -> ApiResponse[GrabberStatus]:
+    """
+    获取抢课任务状态。
+
+    Args:
+        id (int): 抢课任务 ID。
+
+    Returns:
+        ApiResponse[GrabberStatus]: 指定 ID 的抢课任务状态。
+    """
+
+    entry = _get_grabber_entry(id)
+    return ApiResponse(data=entry.conductor.status)
 
 
 @router.get("/{id}/reset")

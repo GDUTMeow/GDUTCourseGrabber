@@ -21,21 +21,18 @@
           <s-icon-button slot="start" type="filled-tonal">
             <img src="favicon.png" alt="Logo" style="width: 40px; height: 40px;" />
           </s-icon-button>
-          <!--抽屉导航0-->
           <s-navigation-item selected="true">
             <s-icon name="home" slot="icon"></s-icon>
-            <div slot="text">首页</div>
+            <div slot="text">课程列表</div>
           </s-navigation-item>
-          <!--抽屉导航1-->
           <s-navigation-item>
             <svg viewBox="0 -960 960 960" slot="icon">
               <path
                 d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z">
               </path>
             </svg>
-            <div slot="text">设置</div>
+            <div slot="text">抢课面板</div>
           </s-navigation-item>
-          <!--抽屉底部-->
           <div slot="end" style="display: flex;align-items: flex-end; padding: 16px 0;">
             <s-dialog>
               <s-icon-button type="outlined" slot="trigger">
@@ -69,17 +66,36 @@
           </div>
         </s-navigation>
       </div>
-      <!--应用栏-->
+
       <s-appbar>
-        <!--应用栏-左侧导航按钮-->
         <s-icon-button slot="navigation" onclick="toggleSidebar()" id="menu-btn" value="1">
           <svg viewBox="0 -960 960 960">
             <path d="M640-80 240-480l400-400 71 71-329 329 329 329-71 71Z"></path>
           </svg>
         </s-icon-button>
-        <!--应用栏-标题-->
         <div slot="headline"> GDUT抢课助手 </div>
-        <!--应用栏-操作按钮-->
+        <s-tooltip slot="action">
+          <s-icon-button slot="trigger" onclick="openGDUT()">
+            <svg t="1750003409860" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+              p-id="4486" width="200" height="200">
+              <path
+                d="M942.16192 357.82656v157.65504l35.92192 43.6224-69.44768 62.8736-63.87712-62.8736 38.31808-44.4416V383.7952C677.888 471.04 621.99808 498.70848 576.512 519.68c-45.50656 20.97152-78.2336 20.97152-123.74016 3.35872-44.72832-17.6128-249.91744-98.95936-356.88448-151.79776-71.0656-35.2256-75.85792-57.87648 1.57696-88.064C198.06208 243.77344 354.52928 180.03968 442.368 145.65376c51.89632-21.8112 79.83104-33.54624 127.73376-9.216 85.44256 36.88448 270.66368 112.35328 368.06656 154.29632 84.64384 38.56384 27.9552 51.15904 3.9936 67.09248zM586.87488 585.09312c49.50016-20.97152 116.57216-56.19712 190.01344-88.8832v259.95264S682.68032 860.16 515.80928 860.16c-178.83136 0-275.456-103.99744-275.456-103.99744V512.96256c56.70912 23.49056 119.76704 44.4416 196.4032 71.2704 47.12448 18.47296 107.008 24.33024 150.1184 0.86016z"
+                fill="#4a454e" p-id="4487"></path>
+            </svg>
+          </s-icon-button>
+          访问学校官网
+        </s-tooltip>
+        <s-tooltip slot="action">
+          <s-icon-button slot="trigger" onclick="openGDUTJW()">
+            <svg t="1750004487785" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+              p-id="9691" width="200" height="200">
+              <path
+                d="M474.645333 836.416a45.845333 45.845333 0 0 1 0 91.669333h-191.018666a45.845333 45.845333 0 0 1 0-91.669333z m416.576-470.613333l28.608 0.042666a106.346667 106.346667 0 0 1 68.736 25.770667 103.338667 103.338667 0 0 1 35.264 77.44c0.128 12.906667 0.170667 25.813333 0.170667 38.741333l-0.170667 77.504c0.042667 61.738667 0 123.498667-0.106666 185.258667 0 13.952 0.085333 27.946667 0 41.834667a106.453333 106.453333 0 0 1-24.853334 67.413333 103.168 103.168 0 0 1-78.314666 36.416h-186.986667c-20.906667 1.344-41.941333 0.341333-62.634667-2.986667a104.746667 104.746667 0 0 1-78.549333-102.613333V496.042667a243.84 243.84 0 0 1 2.666667-50.133334 102.656 102.656 0 0 1 52.010666-67.861333 111.701333 111.701333 0 0 1 51.797334-12.202667h163.754666c19.072 0 38.144-0.085333 57.216 0z m-79.146666 334.677333a45.354667 45.354667 0 0 0-44.117334 44.117333l1.578667 11.733334c2.048 7.381333 5.973333 14.08 11.370667 19.477333l8.938666 6.890667c6.741333 3.968 14.442667 6.058667 22.272 6.037333a45.354667 45.354667 0 0 0 40.32-27.114667c2.773333-5.248 4.053333-11.093333 3.797334-17.024l-1.578667-11.733333a44.096 44.096 0 0 0-11.370667-19.456l-8.917333-6.912a43.861333 43.861333 0 0 0-22.272-6.016zM769.173333 109.738667a104.512 104.512 0 0 1 101.76 95.146666c0.704 7.957333 0.917333 15.957333 0.64 23.957334v88.298666h-207.424a131.456 131.456 0 0 0-112.149333 63.274667H242.154667a45.845333 45.845333 0 1 0 0 91.669333h290.773333v270.634667H105.045333a108.010667 108.010667 0 0 1-67.2-24.746667A104.938667 104.938667 0 0 1 0.426667 635.754667V263.68c0-29.653333-3.242667-62.037333 8.512-89.834667a105.578667 105.578667 0 0 1 96.384-64.106666z m97.578667 417.770666h-117.248a34.368 34.368 0 0 0 0 68.757334h117.248a34.368 34.368 0 0 0 0-68.757334z"
+                fill="#4a454e" p-id="9692"></path>
+            </svg>
+          </s-icon-button>
+          访问教务系统
+        </s-tooltip>
         <s-tooltip slot="action">
           <s-icon-button slot="trigger" onclick="openGithub()">
             <svg t="1747328466788" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
@@ -92,7 +108,7 @@
           访问项目 Github 仓库
         </s-tooltip>
       </s-appbar>
-      <!--主视图-->
+
       <s-linear-progress indeterminate="true" id="global-loading" class="hidden"></s-linear-progress>
       <s-scroll-view style="flex-grow: 1">
         <main style="height: 100%; display: flex;justify-content: center;align-items: center;">
@@ -114,8 +130,8 @@
             </div>
             <s-button slot="action" type="text">确定</s-button>
           </s-dialog>
-          <s-card id="panel">
-            <div slot="headline">抢课面板</div>
+          <s-card id="courses-panel">
+            <div slot="headline">课程列表</div>
             <div slot="text">
               <s-text-field id="cookie" label="JSESSIONID" value="" class="full-width"></s-text-field>
               <div align="right" style="margin-top: 8px;">
@@ -126,19 +142,62 @@
                   保存并登录 </s-button>
               </div>
               <s-divider></s-divider>
-              <s-empty id="content-no-content-tip">什么都没有诶？！先登录一下吧 orz</s-empty>
-              <s-table style="overflow: auto; display: block">
-                <s-head>
+              <div align="center" style="margin-bottom: 16px;">
+                <p>当前已加载了 <span id="current-page">0</span> 页，共 <span id="current-count">0</span> 条</p>
+                <s-radio-button name="page-size" onchange="onChangePageSize(10)">10 条/页</s-radio-button>
+                <s-radio-button name="page-size" checked="true" onchange="onChangePageSize(20)">20 条/页</s-radio-button>
+                <s-radio-button name="page-size" onchange="onChangePageSize(50)">50 条/页</s-radio-button>
+                <s-radio-button name="page-size" onchange="onChangePageSize(100)">100 条/页</s-radio-button>
+                <s-radio-button name="page-size" onchange="onCustomPageSizeChecked()">自定义</s-radio-button>
+                <s-text-field id="custom-page-size-input" class="hidden" label="自定义分页大小"
+                  style="margin-left: 8px;"></s-text-field>
+                <s-button id="custom-page-size-btn"
+                  onclick="onChangePageSize(document.getElementById('custom-page-size-input').value, true)"
+                  style="margin-left: 8px;" class="hidden">确定</s-button>
+              </div>
+              <s-table style="overflow: auto; display: block; text-align: center;">
+                <s-thead>
                   <s-tr>
-                    <s-th>课程名称</s-th>
+                    <s-th>课程名称 (ID)</s-th>
+                    <s-th>教师名字</s-th>
+                    <s-th>课程类别</s-th>
+                    <s-th>人数限制（已选/上限）</s-th>
+                    <s-th>操作</s-th>
                   </s-tr>
-                </s-head>
+                </s-thead>
+                <s-tbody id="content-table-body">
+                  <!-- <s-tr>
+                    <s-td>课程名称 (ID/学分)</s-td>
+                    <s-td>教师名字</s-td>
+                    <s-td>课程类别</s-td>
+                    <s-td>人数限制（已选/上限）</s-td>
+                    <s-td>操作</s-td>
+                  </s-tr> -->
+                </s-tbody>
               </s-table>
+              <s-empty id="content-no-content-tip">什么都没有诶？！先登录一下吧 orz</s-empty>
+              <div align="center" style="margin-top: 16px;">
+                <s-button id="load-more-btn" onclick="loadMoreCourses()"> <s-circular-progress indeterminate="true"
+                    class="hidden" id="load-more-btn-loading"></s-circular-progress> 加载更多 </s-button>
+              </div>
             </div>
           </s-card>
-          <s-card id="settings" class="hidden">
-            <div slot="headline">程序设置</div>
-            <div slot="text">
+          <s-card id="operation-panel" class="hidden">
+            <div slot="headline">抢课面板</div>
+            <div slot="text" style="margin-top: 16px;">
+              <p>当前已经选择了以下课程（共 <span id="selected-courses-count">0</span> 门）：</p>
+              <s-table style="overflow: auto; display: block; text-align: center;">
+                <s-thead>
+                  <s-tr>
+                    <s-th>课程名称 (ID)</s-th>
+                    <s-th>教师名字</s-th>
+                    <s-th>上课时间</s-th>
+                    <s-th>操作</s-th>
+                  </s-tr>
+                </s-thead>
+                <s-tbody id="selected-table-body">
+                </s-tbody>
+              </s-table>
 
             </div>
           </s-card>
@@ -149,6 +208,9 @@
   <script>
     //safari user-scalable=no
     document.addEventListener('gesturestart', (event) => event.preventDefault())
+    window.addEventListener('load', () => {
+      initialize();
+    });
   </script>
   <script src="https://unpkg.com/sober@1.1.5/dist/sober.min.js"></script>
   <script src="scripts.js"></script>

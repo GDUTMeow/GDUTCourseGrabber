@@ -14,6 +14,8 @@ class Course(CourseModel):
     name: str = Field(validation_alias="kcmc")
     teacher: str = Field(validation_alias="teaxm")
     category: str = Field(validation_alias="kcflmc")
+    chosen: int = Field(validation_alias="jxbrs")
+    limit: int = Field(validation_alias="pkrs")
     source: CourseSource = CourseSource.EAS
     note: str = ""
 

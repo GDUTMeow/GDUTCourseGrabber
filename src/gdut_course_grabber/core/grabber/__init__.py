@@ -5,12 +5,34 @@
 import asyncio
 import logging
 from datetime import datetime
+from enum import IntEnum
 from typing import Iterable, Sequence
 
 from gdut_course_grabber.models import Account, Course, GrabberConfig
 from gdut_course_grabber.utils.eas import AuthorizationFailed, EasClient
 
 logger = logging.getLogger(__name__)
+
+
+class GrabberStatus(IntEnum):
+    """
+    抢课工具状态。
+    """
+
+    IDLE = 0
+    """
+    空闲。
+    """
+
+    WAITING = 1
+    """
+    等待。
+    """
+
+    RUNNING = 2
+    """
+    正在工作。
+    """
 
 
 class Grabber:
@@ -35,6 +57,11 @@ class Grabber:
     选课操作任务。
     """
 
+    _running: bool
+    """
+    是否处于工作状态。
+    """
+
     @property
     def queue(self) -> Sequence[Course]:
         """
@@ -42,6 +69,17 @@ class Grabber:
         """
 
         return self._queue.copy()
+
+    @property
+    def status(self) -> GrabberStatus:
+        """
+        状态。
+        """
+
+        if self._task is None:
+            return GrabberStatus.IDLE
+
+        return GrabberStatus.RUNNING if self._running else GrabberStatus.WAITING
 
     def __init__(
         self,
@@ -112,6 +150,8 @@ class Grabber:
 
         await self._wait_until_start()
 
+        self._running = True
+
         while self._queue:
             try:
                 await self._select_courses()
@@ -142,6 +182,8 @@ class Grabber:
         Returns:
             bool: 如果成功取消抢课操作任务则返回 `True`；若取消失败或任务不存在则返回 `False`。
         """
+
+        self._running = False
 
         if not self._task:
             return False

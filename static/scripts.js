@@ -19,9 +19,9 @@ WEEK_CN = {
 }
 
 const TASK_STATUS_MAP = {
-    0: "IDLE",
-    1: "WAITING",
-    2: "RUNNING",
+    0: "空闲/完成",
+    1: "等待开始",
+    2: "正在进行",
 }
 
 // 已加载课程，避免重复加载

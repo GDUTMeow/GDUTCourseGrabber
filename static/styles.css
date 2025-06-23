@@ -89,7 +89,7 @@ s-card {
     /* Cap the maximum width to 1200px */
     /* At 1600px screen width, 1200px is exactly 75% of the screen (1600 * 0.75 = 1200) */
     /* Beyond 1600px, the card stays 1200px, and the side margins grow. */
-    max-width: 1200px;
+    max-width: 1380px;
 
     /* Center the card horizontally and apply vertical margins */
     margin: 16px auto;

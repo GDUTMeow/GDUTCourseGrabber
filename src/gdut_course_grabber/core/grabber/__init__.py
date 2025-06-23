@@ -103,6 +103,8 @@ class Grabber:
 
         self._task = None
 
+        self._running = False
+
     async def _wait_until_start(self) -> None:
         """
         等待至指定开始时间。

@@ -13,3 +13,6 @@ lib64
 
 # IDE
 .vscode
+*dist
+build
+data

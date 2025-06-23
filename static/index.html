@@ -233,17 +233,20 @@
                 </s-table>
                 <s-empty id="operation-panel-course-empty" class="hidden">看起来你还没有选择要上的课诶？</s-empty>
                 <s-divider></s-divider>
-                <s-text-field id="task-sessionid" label="JESSIONID" style="display: grid; width: auto;" readOnly="true">
-                  <div slot="text">若需要修改，请到课程列表页面进行修改</div>
-                </s-text-field>
-                <s-text-field label="任务开始时间（YYYY-MM-DD HH:mm:SS）" id="task-start-time"
-                  style="display: grid; width: auto;" onchange="verifyTimeFormat(this.value)">
-                  <div slot="text">任务开始的时间，必须按照 YYYY-MM-DD HH:mm:SS 的格式填写，例如 <b>2025-09-01 12:00:00</b></div>
-                </s-text-field>
-                <s-text-field id="task-delay" label="抢课延迟（秒）" value="0.5" type="number"
-                  style="display: grid; width: auto;">
-                  <div slot="text">设置每隔多久发送一次抢课请求，越低越快，对电脑的性能要求越高，对服务器的压力越大。</div>
-                </s-text-field>
+                <div align="left">
+                  <s-text-field id="task-sessionid" label="JESSIONID" style="display: grid; width: auto;"
+                    readOnly="true">
+                    <div slot="text">若需要修改，请到课程列表页面进行修改</div>
+                  </s-text-field>
+                  <s-text-field label="任务开始时间（YYYY-MM-DD HH:mm:SS）" id="task-start-time"
+                    style="display: grid; width: auto;" onchange="verifyTimeFormat(this.value)">
+                    <div slot="text">任务开始的时间，必须按照 YYYY-MM-DD HH:mm:SS 的格式填写，例如 <b>2025-09-01 12:00:00</b></div>
+                  </s-text-field>
+                  <s-text-field id="task-delay" label="抢课延迟（秒）" value="0.5" type="number"
+                    style="display: grid; width: auto;">
+                    <div slot="text">设置每隔多久发送一次抢课请求，越低越快，对电脑的性能要求越高，对服务器的压力越大。</div>
+                  </s-text-field>
+                </div>
                 <div align="right">
                   自动重试 <s-switch checked="true" style="margin-left: 8px;" id="task-auto-retry-switch"></s-switch>
                   <s-button id="add-task-btn" onclick="addTask()" style="margin-left: 8px;">

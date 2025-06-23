@@ -617,13 +617,13 @@ function initializeSelectedCourseTable() {
         teacher_td.innerText = course.teacher || '未知教师';
 
         const weeksDisplay = formatWeeksArrayToDisplayString(course.weeks);
-        let dayDisplay = course.day ? `星期 ${WEEK_CN[String(course.day)] || '?'}` : "星期未知";
+        let dayDisplay = course.day ? `星期${WEEK_CN[String(course.day)] || '?'}` : "星期？";
         let sessionDisplay = "节次未知";
         if (course.sessions && typeof course.sessions.start !== 'undefined' && typeof course.sessions.end !== 'undefined') {
-            sessionDisplay = `第 ${course.sessions.start} 节 - 第 ${course.sessions.end} 节`;
+            sessionDisplay = `第 ${course.sessions.start} - ${course.sessions.end} 节`;
         }
 
-        class_time_td.innerText = `${weeksDisplay} 周; ${dayDisplay}; ${sessionDisplay}`;
+        class_time_td.innerText = `${weeksDisplay} 周，${dayDisplay}，${sessionDisplay}`;
 
         remove_btn.innerText = '移除';
         remove_btn.setAttribute('classId', String(course.id));
@@ -639,6 +639,7 @@ function initializeSelectedCourseTable() {
 
         table_body.appendChild(table_line);
     });
+    document.getElementById('selected-courses-count').innerText = globalCourses.length.toString();
 }
 
 

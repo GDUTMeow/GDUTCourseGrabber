@@ -12,11 +12,11 @@
 
 登录后，我们按下键盘上的`F12`，打开控制台后，点击顶上的应用程序（或写作 `Application`），在左侧点击 `Cookie`，再点击它的子节点 `https://jxfw.gdut.edu.cn`，就能够看到如图所示的 `JSESSIONID`
 
-![](https://cdn.jsdelivr.net/gh/GDUTMeow/GDUTCourseGrabber@v3/img/msedge_aOT0WhtEZZ.png)
+![](https://cdn.jsdelivr.net/gh/GDUTMeow/GDUTCourseGrabber@vv3/img/msedge_aOT0WhtEZZ.png)
 
 复制下来，填入程序的课程列表顶上的 `JSESSIONID` 输入框，并点击「保存并登录」按钮，如果输入正确的话，按钮上方的状态指示器会显示 `🟢 已登录`
 
-![](https://cdn.jsdelivr.net/gh/GDUTMeow/GDUTCourseGrabber@v3/img/msedge_uHQEQK2xn3.png)
+![](https://cdn.jsdelivr.net/gh/GDUTMeow/GDUTCourseGrabber@vv3/img/msedge_uHQEQK2xn3.png)
 
 在下方选择自己想要的课程，点击「添加到列表」；点击查看详情可以查看这门课程的详细信息（包括 `课程名称`、`授课学期`、`授课周次`、`授课星期`、`授课内容类型`、`授课地点`、`授课教师`、`授课节次`）
 
@@ -26,7 +26,7 @@
 
 添加完毕自己想要的课程后，在左侧的导航栏点击「任务添加」选项
 
-![](https://cdn.jsdelivr.net/gh/GDUTMeow/GDUTCourseGrabber@v3/img/msedge_QpvLSDw6OI.png)
+![](https://cdn.jsdelivr.net/gh/GDUTMeow/GDUTCourseGrabber@vv3/img/msedge_QpvLSDw6OI.png)
 
 在此处会显示你已经添加的课程列表，你可以在这里进行移除；确认选择的课程与 `JSESSIONID` 是正确的后，修改「任务开始时间」和「抢课延迟」
 
@@ -40,7 +40,7 @@
 
 点击导航栏的「任务状态」，进入任务列表
 
-![](https://cdn.jsdelivr.net/gh/GDUTMeow/GDUTCourseGrabber@v3/img/msedge_hWXdzYrZrk.png)
+![](https://cdn.jsdelivr.net/gh/GDUTMeow/GDUTCourseGrabber@vv3/img/msedge_hWXdzYrZrk.png)
 
 在此处会显示你刚刚添加的任务的一些信息，如 `JSESSIONID`、已选课程等
 
@@ -69,3 +69,5 @@
 ## Credit
 
 https://github.com/FoyonaCZY/GDUT_GrabCourse
+
+https://tieba.baidu.com/p/9023794849

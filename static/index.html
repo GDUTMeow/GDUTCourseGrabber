@@ -255,12 +255,16 @@
               </div>
             </s-card>
           </div>
-          <div id="task-panel" class="hidden" style="margin-top: 32px; margin-bottom: 32px;" align="center" class="hidden">
+          <div id="task-panel" class="hidden" style="margin-top: 32px; margin-bottom: 32px;" align="center"
+            class="hidden">
             <s-card id="task-panel" style="margin-top: 16px; margin-bottom: 16px;">
               <div slot="headline">任务状态</div>
               <div slot="text" style="margin-top: 16px;">
                 <div align="center" style="margin-bottom: 16px;">
                   <s-alert>你可以通过直接点击课程 ID 的小纸片来查看课程的信息</s-alert>
+                </div>
+                <div align="center" style="margin-bottom: 16px;">
+                  <s-alert type="warning">任务说明：空闲/完成时，点击「启动」可以开始任务；等待开始/正在进行时，点击「停止」可以终止任务。</s-alert>
                 </div>
                 <s-table style="overflow: auto; display: block; text-align: center;">
                   <s-thead>

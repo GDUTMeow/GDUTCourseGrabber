@@ -799,7 +799,7 @@ async function flushTaskTable() {
         const retry = task.value.config.retry ? '开启' : '关闭';
 
         let statusValue = await getTaskStatus(taskId);
-        let statusText = TASK_STATUS_MAP[statusValue] || "UNKNOWN";
+        let statusText = TASK_STATUS_MAP[statusValue] || "未知";
 
         const course_tags_td = document.createElement('s-td');
         if (Array.isArray(coursesInTask)) {

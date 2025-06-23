@@ -84,7 +84,7 @@ s-card {
     box-sizing: border-box;
 
     /* Calculate width: Always at least 2% margin on each side (total 4vw removed) */
-    width: calc(100% - 4vw);
+    width: calc(100% - 8vw);
 
     /* Cap the maximum width to 1200px */
     /* At 1600px screen width, 1200px is exactly 75% of the screen (1600 * 0.75 = 1200) */
@@ -99,12 +99,6 @@ s-card {
 
     /* Basic visual styles for s-card (assuming it's a custom component) */
     border-radius: 8px;
-}
-
-@media (min-width: 1600px) {
-    s-card {
-        width: 75vw;
-    }
 }
 
 .hidden {

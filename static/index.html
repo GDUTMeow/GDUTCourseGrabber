@@ -143,8 +143,9 @@
       </s-appbar>
 
       <s-linear-progress indeterminate="true" id="global-loading" class="hidden"></s-linear-progress>
-      <s-scroll-view style="flex-grow: 1">
-        <main style="height: 100%; display: flex;justify-content: center;align-items: center;">
+      <!-- MODIFIED LINE BELOW -->
+      <s-scroll-view style="flex-grow: 1; padding-top: 70px;">
+        <main style="height: 100%; justify-content: center; align-items: center;">
           <s-dialog showed="false" id="dialog">
             <div slot="headline" id="dialog-title" style="margin-top: 16px;"> 🟡 荧 </div>
             <div slot="text" id="dialog-descr" style="margin-top: 32px; line-break: anywhere;">
@@ -163,118 +164,125 @@
             </div>
             <s-button slot="action" type="text">确定</s-button>
           </s-dialog>
-          <s-card id="courses-panel">
-            <div slot="headline">课程列表</div>
-            <div slot="text">
-              <s-text-field id="cookie" label="JSESSIONID" value="" class="full-width"
-                onchange="syncSessionId()"></s-text-field>
-              <div align="right" style="margin-top: 8px;">
-                <p id="status">当前状态：⚪ 未知</p>
-                <s-button id="save-config-btn" onclick="saveAndLogin()">
-                  <s-circular-progress indeterminate="true" class="hidden"
-                    id="save-config-btn-loading"></s-circular-progress>
-                  保存并登录 </s-button>
+          <div id="courses-panel" style="margin-top: 32px; margin-bottom: 32px;" align="center">
+            <s-card style="margin-top: 32px;">
+              <div slot="headline">课程列表</div>
+              <div slot="text">
+                <s-text-field id="cookie" label="JSESSIONID" value="" class="full-width"
+                  onchange="syncSessionId()"></s-text-field>
+                <div align="right" style="margin-top: 8px;">
+                  <p id="status">当前状态：⚪ 未知</p>
+                  <s-button id="save-config-btn" onclick="saveAndLogin()">
+                    <s-circular-progress indeterminate="true" class="hidden"
+                      id="save-config-btn-loading"></s-circular-progress>
+                    保存并登录 </s-button>
+                </div>
+                <s-divider></s-divider>
+                <div align="center" style="margin-bottom: 16px;">
+                  <p>当前已加载了 <span id="current-page">0</span> 页，共 <span id="current-count">0</span> 条</p>
+                  <s-radio-button name="page-size" onchange="onChangePageSize(10)">10 条/页</s-radio-button>
+                  <s-radio-button name="page-size" checked="true" onchange="onChangePageSize(20)">20
+                    条/页</s-radio-button>
+                  <s-radio-button name="page-size" onchange="onChangePageSize(50)">50 条/页</s-radio-button>
+                  <s-radio-button name="page-size" onchange="onChangePageSize(100)">100 条/页</s-radio-button>
+                  <s-radio-button name="page-size" onchange="onCustomPageSizeChecked()">自定义</s-radio-button>
+                  <s-text-field id="custom-page-size-input" class="hidden" label="自定义分页大小"
+                    style="margin-left: 8px;"></s-text-field>
+                  <s-button id="custom-page-size-btn"
+                    onclick="onChangePageSize(document.getElementById('custom-page-size-input').value, true)"
+                    style="margin-left: 8px;" class="hidden">确定</s-button>
+                </div>
+                <s-table style="overflow: auto; display: block; text-align: center;">
+                  <s-thead>
+                    <s-tr>
+                      <s-th>课程名称 (ID)</s-th>
+                      <s-th>教师名字</s-th>
+                      <s-th>课程类别</s-th>
+                      <s-th>人数限制（已选/上限）</s-th>
+                      <s-th>操作</s-th>
+                    </s-tr>
+                  </s-thead>
+                  <s-tbody id="content-table-body">
+                  </s-tbody>
+                </s-table>
+                <s-empty id="content-no-content-tip">什么都没有诶？！先登录一下吧 orz</s-empty>
+                <div align="center" style="margin-top: 16px;">
+                  <s-button id="load-more-btn" onclick="loadMoreCourses()"> <s-circular-progress indeterminate="true"
+                      class="hidden" id="load-more-btn-loading"></s-circular-progress> 加载更多 </s-button>
+                </div>
               </div>
-              <s-divider></s-divider>
-              <div align="center" style="margin-bottom: 16px;">
-                <p>当前已加载了 <span id="current-page">0</span> 页，共 <span id="current-count">0</span> 条</p>
-                <s-radio-button name="page-size" onchange="onChangePageSize(10)">10 条/页</s-radio-button>
-                <s-radio-button name="page-size" checked="true" onchange="onChangePageSize(20)">20 条/页</s-radio-button>
-                <s-radio-button name="page-size" onchange="onChangePageSize(50)">50 条/页</s-radio-button>
-                <s-radio-button name="page-size" onchange="onChangePageSize(100)">100 条/页</s-radio-button>
-                <s-radio-button name="page-size" onchange="onCustomPageSizeChecked()">自定义</s-radio-button>
-                <s-text-field id="custom-page-size-input" class="hidden" label="自定义分页大小"
-                  style="margin-left: 8px;"></s-text-field>
-                <s-button id="custom-page-size-btn"
-                  onclick="onChangePageSize(document.getElementById('custom-page-size-input').value, true)"
-                  style="margin-left: 8px;" class="hidden">确定</s-button>
+            </s-card>
+          </div>
+          <div id="operation-panel" style="margin-top: 32px; margin-bottom: 32px;" align="center" class="hidden">
+            <s-card id="operation-panel" style="margin-top: 16px; margin-bottom: 16px;">
+              <div slot="headline">抢课面板</div>
+              <div slot="text" style="margin-top: 16px;">
+                <p>当前已经选择了以下课程（共 <span id="selected-courses-count">0</span> 门）：</p>
+                <s-table style="overflow: auto; display: block; text-align: center;">
+                  <s-thead>
+                    <s-tr>
+                      <s-th>课程名称 (ID)</s-th>
+                      <s-th>教师名字</s-th>
+                      <s-th>上课时间</s-th>
+                      <s-th>操作</s-th>
+                    </s-tr>
+                  </s-thead>
+                  <s-tbody id="selected-table-body">
+                  </s-tbody>
+                </s-table>
+                <s-empty id="operation-panel-course-empty" class="hidden">看起来你还没有选择要上的课诶？</s-empty>
+                <s-divider></s-divider>
+                <s-text-field id="task-sessionid" label="JESSIONID" style="display: grid; width: auto;" readOnly="true">
+                  <div slot="text">若需要修改，请到课程列表页面进行修改</div>
+                </s-text-field>
+                <s-text-field label="任务开始时间（YYYY-MM-DD HH:mm:SS）" id="task-start-time"
+                  style="display: grid; width: auto;" onchange="verifyTimeFormat(this.value)">
+                  <div slot="text">任务开始的时间，必须按照 YYYY-MM-DD HH:mm:SS 的格式填写，例如 <b>2025-09-01 12:00:00</b></div>
+                </s-text-field>
+                <s-text-field id="task-delay" label="抢课延迟（秒）" value="0.5" type="number"
+                  style="display: grid; width: auto;">
+                  <div slot="text">设置每隔多久发送一次抢课请求，越低越快，对电脑的性能要求越高，对服务器的压力越大。</div>
+                </s-text-field>
+                <div align="right">
+                  自动重试 <s-switch checked="true" style="margin-left: 8px;" id="task-auto-retry-switch"></s-switch>
+                  <s-button id="add-task-btn" onclick="addTask()" style="margin-left: 8px;">
+                    <s-circular-progress indeterminate="true" class="hidden"
+                      id="add-task-btn-loading"></s-circular-progress>
+                    添加任务
+                  </s-button>
+                </div>
               </div>
-              <s-table style="overflow: auto; display: block; text-align: center;">
-                <s-thead>
-                  <s-tr>
-                    <s-th>课程名称 (ID)</s-th>
-                    <s-th>教师名字</s-th>
-                    <s-th>课程类别</s-th>
-                    <s-th>人数限制（已选/上限）</s-th>
-                    <s-th>操作</s-th>
-                  </s-tr>
-                </s-thead>
-                <s-tbody id="content-table-body">
-                </s-tbody>
-              </s-table>
-              <s-empty id="content-no-content-tip">什么都没有诶？！先登录一下吧 orz</s-empty>
-              <div align="center" style="margin-top: 16px;">
-                <s-button id="load-more-btn" onclick="loadMoreCourses()"> <s-circular-progress indeterminate="true"
-                    class="hidden" id="load-more-btn-loading"></s-circular-progress> 加载更多 </s-button>
+            </s-card>
+          </div>
+          <div id="task-panel" class="hidden" style="margin-top: 32px; margin-bottom: 32px;" align="center" class="hidden">
+            <s-card id="task-panel" style="margin-top: 16px; margin-bottom: 16px;">
+              <div slot="headline">任务状态</div>
+              <div slot="text" style="margin-top: 16px;">
+                <div align="center" style="margin-bottom: 16px;">
+                  <s-alert>你可以通过直接点击课程 ID 的小纸片来查看课程的信息</s-alert>
+                </div>
+                <s-table style="overflow: auto; display: block; text-align: center;">
+                  <s-thead>
+                    <s-tr>
+                      <s-th>任务 ID</s-th>
+                      <s-th>JSESSIONID</s-th>
+                      <s-th>已选课程 ID</s-th>
+                      <s-th>启动时间</s-th>
+                      <s-th>延迟</s-th>
+                      <s-th>自动重试</s-th>
+                      <s-th>状态</s-th>
+                      <s-th>操作</s-th>
+                    </s-tr>
+                  </s-thead>
+                  <s-tbody id="task-table-body">
+                  </s-tbody>
+                </s-table>
+                <s-empty id="task-empty-tip">
+                  任务列表为空，还没添加抢课任务吧 (((ﾟДﾟ;)??
+                </s-empty>
               </div>
-            </div>
-          </s-card>
-          <s-card id="operation-panel" class="hidden" style="margin-top: 16px; margin-bottom: 16px;">
-            <div slot="headline">抢课面板</div>
-            <div slot="text" style="margin-top: 16px;">
-              <p>当前已经选择了以下课程（共 <span id="selected-courses-count">0</span> 门）：</p>
-              <s-table style="overflow: auto; display: block; text-align: center;">
-                <s-thead>
-                  <s-tr>
-                    <s-th>课程名称 (ID)</s-th>
-                    <s-th>教师名字</s-th>
-                    <s-th>上课时间</s-th>
-                    <s-th>操作</s-th>
-                  </s-tr>
-                </s-thead>
-                <s-tbody id="selected-table-body">
-                </s-tbody>
-              </s-table>
-              <s-empty id="operation-panel-course-empty" class="hidden">看起来你还没有选择要上的课诶？</s-empty>
-              <s-divider></s-divider>
-              <s-text-field id="task-sessionid" label="JESSIONID" style="display: grid; width: auto;" readOnly="true">
-                <div slot="text">若需要修改，请到课程列表页面进行修改</div>
-              </s-text-field>
-              <s-text-field label="任务开始时间（YYYY-MM-DD HH:mm:SS）" id="task-start-time" style="display: grid; width: auto;"
-                onchange="verifyTimeFormat(this.value)">
-                <div slot="text">任务开始的时间，必须按照 YYYY-MM-DD HH:mm:SS 的格式填写，例如 <b>2025-09-01 12:00:00</b></div>
-              </s-text-field>
-              <s-text-field id="task-delay" label="抢课延迟（秒）" value="0.5" type="number"
-                style="display: grid; width: auto;">
-                <div slot="text">设置每隔多久发送一次抢课请求，越低越快，对电脑的性能要求越高，对服务器的压力越大。</div>
-              </s-text-field>
-              <div align="right">
-                自动重试 <s-switch checked="true" style="margin-left: 8px;" id="task-auto-retry-switch"></s-switch>
-                <s-button id="add-task-btn" onclick="addTask()" style="margin-left: 8px;">
-                  <s-circular-progress indeterminate="true" class="hidden"
-                    id="add-task-btn-loading"></s-circular-progress>
-                  添加任务
-                </s-button>
-              </div>
-            </div>
-          </s-card>
-
-          <s-card id="task-panel" class="hidden" style="margin-top: 16px; margin-bottom: 16px;">
-            <div slot="headline">任务状态</div>
-            <div slot="text" style="margin-top: 16px;">
-              <div align="center" style="margin-bottom: 16px;">
-                <s-alert>你可以通过直接点击课程 ID 的小纸片来查看课程的信息</s-alert>
-              </div>
-              <s-table style="overflow: auto; display: block; text-align: center;">
-                <s-thead>
-                  <s-tr>
-                    <s-th>JSESSIONID</s-th>
-                    <s-th>已选课程 ID</s-th>
-                    <s-th>启动时间</s-th>
-                    <s-th>延迟</s-th>
-                    <s-th>自动重试</s-th>
-                    <s-th>状态</s-th>
-                    <s-th>操作</s-th>
-                  </s-tr>
-                </s-thead>
-                <s-tbody id="task-table-body">
-                </s-tbody>
-              </s-table>
-              <s-empty>
-                任务列表为空，还没添加抢课任务吧 (((ﾟДﾟ;)??
-              </s-empty>
-            </div>
-          </s-card>
+            </s-card>
+          </div>
         </main>
       </s-scroll-view>
     </s-drawer>
@@ -297,8 +305,6 @@
     //safari user-scalable=no
     document.addEventListener('gesturestart', (event) => event.preventDefault())
     window.addEventListener('load', () => {
-      initialize();
-      changeAccentColor();
     });
   </script>
   <script src="scripts.js"></script>

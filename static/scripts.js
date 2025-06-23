@@ -8,6 +8,19 @@ globalPageSize = 20;
 globalLoggedIn = false;
 globalCourses = []; // 用于存储用户已选择的课程详情，现在将从localStorage加载和保存
 
+WEEK_CN = {
+    '1': '一',
+    '2': '二',
+    '3': '三',
+    '4': '四',
+    '5': '五',
+    '6': '六',
+    '7': '日',
+}
+
+// 已加载课程，避免重复加载
+let displayedCourseIdsInTable = new Set();
+
 function toggleSidebar() {
     const menuBtn = document.getElementById('menu-btn');
     if (menuBtn.value === '1') {
@@ -86,6 +99,9 @@ function changePanel(panelId) {
     if (panelId === 1) {
         initializeSelectedCourseTable();
     }
+    if (panelId === 2) {
+        flushTaskTable();
+    }
 }
 
 function saveCoursesToLocalStorage() {
@@ -94,11 +110,13 @@ function saveCoursesToLocalStorage() {
 
 function initialize() {
     const cookieField = document.getElementById('cookie');
+    const taskSessionIdField = document.getElementById('task-sessionid')
     if (localStorage.getItem('cookie')) {
         cookieField.value = localStorage.getItem('cookie');
+        taskSessionIdField.value = localStorage.getItem('cookie'); // 同步初始值
+        saveAndLogin(false);
     }
 
-    // 从 localStorage 加载已选课程
     const storedCourses = localStorage.getItem('selectedCourses');
     if (storedCourses) {
         try {
@@ -111,61 +129,74 @@ function initialize() {
             }
         } catch (e) {
             console.error("解析localStorage中的selectedCourses失败:", e);
-            globalCourses = []; // 解析失败时重置
+            globalCourses = [];
         }
     } else {
-        globalCourses = []; // 没有数据，初始化为空数组
+        globalCourses = [];
     }
+    changeAccentColor();
 }
 
-function saveAndLogin() {
+function saveAndLogin(positive = true) {
     const cookieField = document.getElementById('cookie');
     if (!cookieField.value) {
         showDialog('错误', '请先输入 JSESSIONID 再进行登录', 'error');
         return;
     }
-
-    login(cookieField.value);
+    login(cookieField.value, positive);
+    syncSessionId(); // 登录后同步一次
 }
 
-function login(cookie) {
+function login(cookie, positive = true) {
     const saveBtn = document.getElementById('save-config-btn');
     const loadingIndicator = document.getElementById('save-config-btn-loading');
     saveBtn.disabled = true;
     loadingIndicator.classList.remove('hidden');
 
-    return fetch('/api/eas/courses', {
+    return fetch(`/api/eas/courses?count=1&page=1&session_id=${cookie}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-            count: 1,
-            page: 1,
-            session_id: cookie,
-        })
     })
         .then(response => {
             if (response.ok) {
                 return response.json().then(jsonResponse => {
                     globalLoggedIn = true;
                     localStorage.setItem('cookie', cookie);
-                    showDialog('成功', '登录成功！', 'success');
+                    if (positive) {
+                        showDialog('成功', '登录成功！', 'success');
+                    }
+                    document.getElementById('content-no-content-tip').classList.add('hidden');
+                    document.getElementById('status').innerText = '🟢 已登录';
+                    document.getElementById('content-table-body').innerHTML = '';
+                    globalCurrentPage.innerText = '0';
+                    globalCurrentCount.innerText = '0';
+                    flushCoursesTable();
                     return true;
                 });
             } else {
                 return response.json().then(errorData => {
                     const errorMessage = errorData.message || `服务器返回错误状态码: ${response.status}.`;
-                    showDialog('错误', `登录失败：${errorMessage}`, 'error');
+                    document.getElementById('status').innerText = '🔴 登录出错，请尝试更新 JSESSIONID';
+                    if (positive) {
+                        showDialog('错误', `登录失败：${errorMessage}`, 'error');
+                    }
                     return false;
                 }).catch(() => {
-                    showDialog('错误', `登录失败：服务器返回状态码 ${response.status}`, 'error');
+                    document.getElementById('status').innerText = '🔴 登录出错，请尝试更新 JSESSIONID';
+                    if (positive) {
+                        showDialog('错误', `登录失败：服务器返回状态码 ${response.status}`, 'error');
+                    }
                     return false;
                 });
             }
         })
         .catch(error => {
-            showDialog('错误', `登录失败，请稍后重试或查看控制台\n${error.message || error}\n如果出现了严重的错误，可以考虑开个 issue: https://github.com/GDUTMeow/GDUTCourseGrabber/issues/new`, 'error');
+            document.getElementById('status').innerText = '🔴 登录出错';
+            if (positive) {
+                showDialog('错误', `登录失败，请稍后重试或查看控制台\n${error.message || error}\n如果出现了严重的错误，可以考虑开个 issue: https://github.com/GDUTMeow/GDUTCourseGrabber/issues/new`, 'error');
+            }
             console.error('登录失败:', error);
             return false;
         })
@@ -175,12 +206,21 @@ function login(cookie) {
         });
 }
 
+function flushCoursesTable() {
+    document.getElementById('content-table-body').innerHTML = '';
+    globalCurrentPage.innerText = '0';
+    globalCurrentCount.innerText = '0';
+    displayedCourseIdsInTable.clear();
+    loadMoreCourses();
+}
+
 function onChangePageSize(size, custom = false) {
     if (!custom) {
         document.getElementById('custom-page-size-input').classList.add('hidden');
         document.getElementById('custom-page-size-btn').classList.add('hidden');
     }
     globalPageSize = Number(size);
+    flushCoursesTable();
 }
 
 function onCustomPageSizeChecked() {
@@ -189,12 +229,6 @@ function onCustomPageSizeChecked() {
     document.getElementById('custom-page-size-btn').classList.remove('hidden');
 }
 
-/**
- * 通过服务器获取更多课程
- * @param {number} page - 页码，默认为1
- * @param {number} size - 每页课程数量，默认为20
- * @param {boolean} positive - 是否为用户主动获取
- */
 function fetchNewCourses(page = 1, size = 20, positive = true) {
     globalLoading.setAttribute('showed', 'true');
 
@@ -205,16 +239,11 @@ function fetchNewCourses(page = 1, size = 20, positive = true) {
     }
     const cookie = localStorage.getItem('cookie');
 
-    return fetch('/api/eas/courses', {
+    return fetch(`/api/eas/courses?count=${size}&page=${page}&session_id=${cookie}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-            count: size,
-            page: page,
-            session_id: cookie,
-        })
     })
         .then(response => {
             if (response.ok) {
@@ -229,18 +258,17 @@ function fetchNewCourses(page = 1, size = 20, positive = true) {
             }
         })
         .then(jsonResponse => {
-            globalLoggedIn = true;
-            localStorage.setItem('cookie', cookie);
-
-            if (jsonResponse.error && jsonResponse.error !== "unexpected" && jsonResponse.error !== "ok") {
-                showDialog('错误', jsonResponse.message || '获取课程列表失败，服务器返回错误信息。', 'error');
-                return false;
+            if (jsonResponse.error && jsonResponse.error !== "ok" && jsonResponse.error !== "unexpected") {
+                if (jsonResponse.message) {
+                    showDialog('提示', jsonResponse.message, 'info');
+                } else {
+                    showDialog('错误', '获取课程列表时服务器返回未知错误。', 'error');
+                }
+                return (jsonResponse.data && Array.isArray(jsonResponse.data)) ? jsonResponse.data : [];
             }
-
-            return jsonResponse.data;
+            return jsonResponse.data || [];
         })
         .catch(error => {
-            globalLoggedIn = false;
             showDialog('错误', `获取课程列表失败，请稍后重试或查看控制台\n${error.message || error}\n如果出现了严重的错误，可以考虑开个 issue: https://github.com/GDUTMeow/GDUTCourseGrabber/issues/new`, 'error');
             console.error('获取课程失败:', error);
             return false;
@@ -257,25 +285,44 @@ function loadMoreCourses() {
     fetchNewCourses(newPage, globalPageSize, true)
         .then(coursesData => {
             if (coursesData && Array.isArray(coursesData)) {
+                let newCoursesAddedCount = 0;
                 coursesData.forEach(course => {
-                    addLineToCourseTable(
-                        course.name,
-                        course.id,
-                        course.teacher,
-                        course.category,
-                        course.chosen,
-                        course.limit
-                    );
+                    if (course && typeof course.id !== 'undefined') {
+                        const courseIdStr = String(course.id);
+                        if (!displayedCourseIdsInTable.has(courseIdStr)) {
+                            addLineToCourseTable(
+                                course.name,
+                                course.id,
+                                course.teacher,
+                                course.category,
+                                course.chosen,
+                                course.limit,
+                                course.source, // 传递 source
+                                course.note    // 传递 note
+                            );
+                            displayedCourseIdsInTable.add(courseIdStr);
+                            newCoursesAddedCount++;
+                        }
+                    } else {
+                        console.warn("Encountered a course with missing ID or invalid course object:", course);
+                    }
                 });
-                globalCurrentPage.innerText = newPage.toString();
-                globalCurrentCount.innerText = (Number(globalCurrentCount.innerText) + coursesData.length).toString();
+
+                if (newCoursesAddedCount > 0) {
+                    globalCurrentPage.innerText = newPage.toString();
+                    globalCurrentCount.innerText = (Number(globalCurrentCount.innerText) + newCoursesAddedCount).toString();
+                } else if (newPage > 1) {
+                    showDialog('提示', '课程列表已经加载完啦，下面已经没有更多课程了', 'info');
+                }
+            } else if (coursesData === false) {
+                // Error handled by fetchNewCourses
             } else {
-                console.warn('未获取到新的课程数据或数据格式不正确。');
+                console.warn('loadMoreCourses: 未获取到新的课程数据或数据格式不正确。 Data received:', coursesData);
             }
         });
 }
 
-function addLineToCourseTable(name, id, teacher, category, chosen, limit) {
+function addLineToCourseTable(name, id, teacher, category, chosen, limit, source = 0, note = "") {
     const table_body = document.getElementById('content-table-body');
     const table_line = document.createElement('s-tr');
     const operation_td = document.createElement('s-td');
@@ -285,7 +332,19 @@ function addLineToCourseTable(name, id, teacher, category, chosen, limit) {
     add_btn.innerText = '添加到列表';
     add_btn.setAttribute('type', 'outlined');
     add_btn.setAttribute('classId', String(id));
-    add_btn.setAttribute('onclick', `addCourse(this.getAttribute('classId'))`);
+
+    const courseRawData = {
+        name: name,
+        teacher: teacher,
+        category: category || "",
+        chosen: chosen, // 保持原始类型或 undefined
+        limit: limit,   // 保持原始类型或 undefined
+        source: source, // 保持原始类型或 undefined
+        note: note || ""
+    };
+    add_btn.dataset.courseRaw = JSON.stringify(courseRawData);
+
+    add_btn.setAttribute('onclick', `addCourse(this.getAttribute('classId'), JSON.parse(this.dataset.courseRaw))`);
     add_btn.style.marginRight = '8px';
 
     detail_btn.innerText = '查看详情';
@@ -298,8 +357,8 @@ function addLineToCourseTable(name, id, teacher, category, chosen, limit) {
     const numLimit = Number(limit);
 
     if (isNaN(numLimit) || isNaN(numSelected) || numLimit === 0 || limit === "?" || chosen === "?") {
-        limit_linear.setAttribute('value', '100');
-        limit_td.innerText = `${chosen}/${limit}`;
+        limit_linear.setAttribute('value', '0');
+        limit_td.innerText = `${chosen || '?'}/${limit || '?'}`;
     } else {
         limit_linear.setAttribute('value', String((numSelected / numLimit) * 100));
         limit_td.innerText = `${numSelected}/${numLimit}`;
@@ -318,20 +377,44 @@ function addLineToCourseTable(name, id, teacher, category, chosen, limit) {
     table_body.appendChild(table_line);
 }
 
+function formatWeeksArrayToDisplayString(weeks) {
+    if (!weeks || !Array.isArray(weeks) || weeks.length === 0) {
+        return "未知";
+    }
+    const sortedWeeks = [...new Set(weeks)].sort((a, b) => a - b);
+    let weekStr = "";
+    if (sortedWeeks.length > 0) {
+        let startRange = sortedWeeks[0];
+        for (let i = 0; i < sortedWeeks.length; i++) {
+            if (i + 1 < sortedWeeks.length && sortedWeeks[i + 1] === sortedWeeks[i] + 1) {
+            } else {
+                if (weekStr) weekStr += ", ";
+                if (startRange === sortedWeeks[i]) {
+                    weekStr += startRange;
+                } else {
+                    weekStr += `${startRange}-${sortedWeeks[i]}`;
+                }
+                if (i + 1 < sortedWeeks.length) {
+                    startRange = sortedWeeks[i + 1];
+                }
+            }
+        }
+    }
+    return weekStr || "未知";
+}
+
 function fetchCourseDetail(classId, positive = true) {
     if (!globalLoggedIn || !localStorage.getItem('cookie')) {
         showDialog('错误', '请先登录后再进行操作', 'error');
         return Promise.resolve(false);
     }
+    globalLoading.setAttribute('showed', 'true');
 
-    return fetch("/api/eas/courses/" + classId + "/lessons", {
+    return fetch("/api/eas/courses/" + classId + "/lessons?session_id=" + localStorage.getItem('cookie'), {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            session_id: localStorage.getItem('cookie'),
-        })
+        }
     })
         .then(response => {
             if (response.ok) {
@@ -346,62 +429,87 @@ function fetchCourseDetail(classId, positive = true) {
             }
         })
         .then(jsonResponse => {
-            const courseDetail = jsonResponse.data;
+            const courseLessons = jsonResponse.data;
 
-            if (!courseDetail) {
-                throw new Error('未找到课程详细信息。');
+            if (jsonResponse.error && jsonResponse.error !== "ok" && jsonResponse.error !== "unexpected") {
+                throw new Error(jsonResponse.message || '获取课程详情时服务器返回错误。');
             }
 
-            const name = courseDetail.name;
-            const term = courseDetail.term;
-            const week = courseDetail.week;
-            const day = courseDetail.day;
-            const content_type = courseDetail.content_type;
-            const location_type = courseDetail.location_type;
-            const location = courseDetail.location;
-            const teachers = courseDetail.teachers;
-            const sessions = courseDetail.sessions;
+            if (!Array.isArray(courseLessons) || courseLessons.length === 0) {
+                // 如果没有授课安排，也返回一个基础结构，以便 addCourse 能继续
+                console.warn(`课程 ${classId} 未找到授课安排，将使用基础信息。`);
+                if (!positive) { // 只有在添加到列表时，才需要返回一个结构
+                    return {
+                        term: "未知",
+                        weeks: [],
+                        day: null,
+                        content_type: "未知",
+                        location_type: "未知",
+                        location: "未指定",
+                        sessions: { start: '?', end: '?' },
+                        // name 和 teacher 将由调用者 (addCourse) 中的 courseRawData 提供
+                    };
+                } else { // 如果是直接查看详情，则报错
+                    throw new Error('未找到课程详细信息或课程无授课安排。');
+                }
+            }
 
-            const teacherStr = Array.isArray(teachers) ? teachers.join(', ') : teachers;
+            const firstLesson = courseLessons[0];
+            const nameFromDetail = firstLesson.name;
+            const term = firstLesson.term;
+            const day = firstLesson.day;
+            const content_type = firstLesson.content_type;
+            const location_type = firstLesson.location_type;
+            const location = firstLesson.location;
+            const teachers = firstLesson.teachers;
+            const sessions = firstLesson.sessions;
+            const weeksArray = courseLessons.map(lesson => lesson.week).filter(week => typeof week === 'number');
+            const teacherStr = Array.isArray(teachers) ? teachers.join(', ') : (teachers || "未知教师");
             const sessionStart = Array.isArray(sessions) && sessions.length > 0 ? Math.min(...sessions) : '?';
             const sessionEnd = Array.isArray(sessions) && sessions.length > 0 ? Math.max(...sessions) : '?';
 
             if (positive) {
+                const weekStrDisplay = formatWeeksArrayToDisplayString(weeksArray);
                 const message = `
-课程名称: ${name}
-授课学期: ${term}
-授课周次: ${week} 周
-授课星期: 星期${day}
-授课内容类型: ${content_type}
-授课地点: ${location} (${location_type})
+课程名称: ${nameFromDetail}
+授课学期: ${term || '未知'}
+授课周次: ${weekStrDisplay} 周
+授课星期: 星期${WEEK_CN[day.toString()] || '?'}
+授课内容类型: ${content_type || '未知'}
+授课地点: ${location || '未指定'} (${location_type || '未知'})
 授课教师: ${teacherStr}
 授课节次: 第 ${sessionStart} 节 - 第 ${sessionEnd} 节
             `;
                 showDialog('课程详情', message, 'info');
+                return true;
             } else {
                 return {
-                    id: classId,
-                    name: name,
+                    // id, name, teacher 将由 addCourse 使用 courseRawData
                     term: term,
-                    week: week,
+                    weeks: weeksArray,
                     day: day,
                     content_type: content_type,
                     location_type: location_type,
                     location: location,
-                    teacher: teacherStr,
                     sessions: {
                         start: sessionStart,
                         end: sessionEnd
-                    }
+                    },
+                    // 保留详情中的name和teacher，addCourse会决定用哪个
+                    nameFromDetail: nameFromDetail,
+                    teacherFromDetail: teacherStr
                 };
             }
         })
         .catch(error => {
-            console.error('获取课程详情失败:', error);
+            console.error(`获取课程 ${classId} 详情失败:`, error);
             if (positive) {
                 showDialog('错误', `获取课程详情失败，请稍后重试或查看控制台\n${error.message || error}`, 'error');
             }
-            return false;
+            return false; // 指示获取 lesson 详情失败
+        })
+        .finally(() => {
+            globalLoading.setAttribute('showed', 'false');
         });
 }
 
@@ -409,58 +517,96 @@ function showCourseDetail(classId) {
     fetchCourseDetail(classId, true);
 }
 
-function addCourse(classId) {
+function addCourse(classId, courseRawData) {
     if (!globalLoggedIn || !localStorage.getItem('cookie')) {
         showDialog('错误', '请先登录后再进行操作', 'error');
         return;
     }
 
-    const existingCourse = globalCourses.find(course => course.id === classId);
+    const classIdStr = String(classId);
+    const existingCourse = globalCourses.find(course => String(course.id) === classIdStr);
     if (existingCourse) {
-        showDialog('信息', `课程 ${existingCourse.name} (${classId}) 已经在列表中了。`, 'info');
+        showDialog('信息', `课程 ${courseRawData.name || existingCourse.name} (${classIdStr}) 已经在列表中了。`, 'info');
         return;
     }
 
-    fetchCourseDetail(classId, false)
-        .then(courseData => {
-            if (courseData) {
-                globalCourses.push(courseData);
-                saveCoursesToLocalStorage();
-                showDialog('成功', `课程 ${courseData.name} (${classId}) 已成功添加到列表。`, 'success');
-                if (document.getElementById('operation-panel').classList.contains('hidden') === false) {
-                    initializeSelectedCourseTable();
-                }
-            } else {
-                showDialog('错误', '无法获取课程详细信息，课程添加失败，请稍后重试或查看控制台。', 'error');
+    globalLoading.setAttribute('showed', 'true');
+    fetchCourseDetail(classIdStr, false)
+        .then(lessonDetails => {
+            globalLoading.setAttribute('showed', 'false');
+            // lessonDetails 可能为 false (如果 fetch 失败) 或一个对象 (即使无授课安排，也会有个基础对象)
+            if (lessonDetails === false && !courseRawData.ignoreLessonsError) { // 如果获取lessons失败且不是强制添加
+                showDialog('错误', `无法添加课程 ${courseRawData.name || classIdStr}，获取上课安排失败。是否仍要添加（仅基础信息）？`, 'error');
+                // 可以提供一个确认对话框，如果用户确认，则再次调用 addCourse 并标记忽略 lessons 错误
+                // 为简化，此处直接提示失败
+                return;
+            }
+
+            // 确保 lessonDetails 是一个对象，即使是空的
+            const safeLessonDetails = (typeof lessonDetails === 'object' && lessonDetails !== null) ? lessonDetails : {
+                term: "未知", weeks: [], day: null, content_type: "未知",
+                location_type: "未知", location: "未指定", sessions: { start: '?', end: '?' }
+            };
+
+
+            const courseToAdd = {
+                id: classIdStr,
+                name: String(courseRawData.name || "未知课程"),
+                teacher: String(courseRawData.teacher || "未知教师"),
+                category: String(courseRawData.category || ""),
+                chosen: courseRawData.chosen !== undefined ? Number(courseRawData.chosen) : 0,
+                limit: courseRawData.limit !== undefined ? Number(courseRawData.limit) : 0,
+                source: courseRawData.source !== undefined ? Number(courseRawData.source) : 0,
+                note: String(courseRawData.note || ""),
+
+                term: safeLessonDetails.term,
+                weeks: safeLessonDetails.weeks,
+                day: safeLessonDetails.day,
+                content_type: safeLessonDetails.content_type,
+                location_type: safeLessonDetails.location_type,
+                location: safeLessonDetails.location,
+                sessions: safeLessonDetails.sessions,
+            };
+
+            globalCourses.push(courseToAdd);
+            saveCoursesToLocalStorage();
+            showDialog('成功', `课程 ${courseToAdd.name} (${classIdStr}) 已成功添加到列表。`, 'success');
+            if (document.getElementById('operation-panel').classList.contains('hidden') === false) {
+                initializeSelectedCourseTable();
             }
         })
-        .catch(error => {
-            console.error('添加课程失败:', error);
-            showDialog('错误', '添加课程时发生错误，请稍后重试或查看控制台。', 'error');
+        .catch(error => { // 这个 catch 主要捕获 fetchCourseDetail 内部的 promise reject
+            globalLoading.setAttribute('showed', 'false');
+            console.error(`添加课程 ${classIdStr} 过程出错:`, error);
+            showDialog('错误', `添加课程 ${courseRawData.name || classIdStr} 时发生错误，请查看控制台。`, 'error');
         });
 }
 
 function removeCourse(classId) {
+    const classIdStr = String(classId);
+    const courseToRemove = globalCourses.find(course => String(course.id) === classIdStr);
     const originalLength = globalCourses.length;
-    globalCourses = globalCourses.filter(course => course.id !== classId);
+    globalCourses = globalCourses.filter(course => String(course.id) !== classIdStr);
+
     if (globalCourses.length < originalLength) {
         saveCoursesToLocalStorage();
-        showDialog('成功', `课程 (${classId}) 已从列表中移除。`, 'success');
+        showDialog('成功', `课程 ${courseToRemove ? courseToRemove.name : ''} (${classIdStr}) 已从列表中移除。`, 'success');
         initializeSelectedCourseTable();
     } else {
-        showDialog('错误', `课程 (${classId}) 未在列表中找到。`, 'error');
+        showDialog('信息', `课程 (${classIdStr}) 未在列表中找到。`, 'info');
     }
 }
 
 function initializeSelectedCourseTable() {
     const table_body = document.getElementById('selected-table-body');
-    const empty = document.getElementById('operation-panel-course-empty');
+    const empty_message = document.getElementById('operation-panel-course-empty');
     table_body.innerHTML = '';
-    empty.classList.add('hidden');
 
     if (globalCourses.length === 0) {
-        empty.classList.remove('hidden');
+        empty_message.classList.remove('hidden');
+        return;
     }
+    empty_message.classList.add('hidden');
 
     globalCourses.forEach(course => {
         const table_line = document.createElement('s-tr');
@@ -470,14 +616,17 @@ function initializeSelectedCourseTable() {
         const operation_td = document.createElement('s-td');
         const remove_btn = document.createElement('s-button');
 
-        name_td.innerText = course.name + ' (' + course.id + ')';
-        teacher_td.innerText = course.teacher;
+        name_td.innerText = `${course.name || '未知课程'} (${course.id})`;
+        teacher_td.innerText = course.teacher || '未知教师';
 
+        const weeksDisplay = formatWeeksArrayToDisplayString(course.weeks);
+        let dayDisplay = course.day ? `星期 ${WEEK_CN[String(course.day)] || '?'}` : "星期未知";
+        let sessionDisplay = "节次未知";
         if (course.sessions && typeof course.sessions.start !== 'undefined' && typeof course.sessions.end !== 'undefined') {
-            class_time_td.innerText = `星期 ${course.day} 第 ${course.sessions.start} 节 - 第 ${course.sessions.end} 节`;
-        } else {
-            class_time_td.innerText = `星期 ${course.day} 节次未知`;
+            sessionDisplay = `第 ${course.sessions.start} 节 - 第 ${course.sessions.end} 节`;
         }
+
+        class_time_td.innerText = `${weeksDisplay} 周; ${dayDisplay}; ${sessionDisplay}`;
 
         remove_btn.innerText = '移除';
         remove_btn.setAttribute('classId', String(course.id));
@@ -493,8 +642,8 @@ function initializeSelectedCourseTable() {
 
         table_body.appendChild(table_line);
     });
-
 }
+
 
 function addTask() {
     if (globalCourses.length === 0) {
@@ -505,27 +654,39 @@ function addTask() {
         showDialog('错误', '请先登录后再进行操作', 'error');
         return;
     }
-    if (verifyTimeFormat(document.getElementById('task-start-time').value) === false) {
-        showDialog('错误', '任务开始时间格式不正确，请按照 YYYY-MM-DD HH-mm-SS 的格式填写，例如 2025-09-01 12:00:00', 'error');
+    const startTimeValue = document.getElementById('task-start-time').value.trim();
+    if (startTimeValue && verifyTimeFormat(startTimeValue) === false) {
+        showDialog('错误', '任务开始时间格式不正确，请按照 YYYY-MM-DD HH:mm:SS 的格式填写，例如 2025-09-01 12:00:00', 'error');
         return;
     }
     const cookie = localStorage.getItem('cookie');
-    const courses = [];
-    globalCourses.forEach(course => {
-        courses.push(course.id);
-    })
+
+    const coursesForPayload = globalCourses.map(course => {
+        return {
+            id: Number(course.id),
+            name: String(course.name || ""),
+            teacher: String(course.teacher || ""),
+            category: String(course.category || ""),
+            chosen: Number(course.chosen) || 0,
+            limit: Number(course.limit) || 0,
+            source: Number(course.source) || 0,
+            note: String(course.note || "")
+        };
+    });
+
     const taskData = {
         account: {
             session_id: cookie,
         },
         config: {
-            delay: "PT" + document.getElementById('task-delay').value + "S" || "PT0.5S",
+            delay: "PT" + (document.getElementById('task-delay').value || "0.5") + "S",
             retry: document.getElementById('task-auto-retry-switch').checked,
-            start_at: new Date(document.getElementById('task-start-time').value.trim()).toISOString() || new Date().toISOString(),
+            start_at: startTimeValue ? new Date(startTimeValue).toISOString() : new Date().toISOString(),
         },
-        courses: courses,
-    }
+        courses: coursesForPayload,
+    };
 
+    globalLoading.setAttribute('showed', 'true');
     fetch("/api/grabber", {
         method: 'POST',
         headers: {
@@ -534,113 +695,236 @@ function addTask() {
         body: JSON.stringify(taskData)
     }).then(response => {
         if (response.ok) {
-            showDialog('成功', '抢课任务已添加，您可以在任务列表中查看任务。', 'success');
+            return response.json().then(data => {
+                let taskIdMessage = '';
+                if (data && data.data && data.data.task_id) {
+                    taskIdMessage = ` (ID: ${data.data.task_id})`;
+                } else if (data && data.task_id) {
+                    taskIdMessage = ` (ID: ${data.task_id})`;
+                }
+                showDialog('成功', `抢课任务已添加${taskIdMessage}，您可以在任务列表中查看任务。`, 'success');
+                flushTaskTable();
+            });
         } else {
-            showDialog('错误', `抢课任务添加失败，服务器返回状态码: ${response.status}，请稍后重试或查看控制台。`, 'error');
+            return response.json().then(err => {
+                showDialog('错误', `抢课任务添加失败: ${err.message || response.statusText}`, 'error');
+            }).catch(() => {
+                showDialog('错误', `抢课任务添加失败，服务器返回状态码: ${response.status}，请稍后重试或查看控制台。`, 'error');
+            });
         }
     }).catch(error => {
         console.error('添加抢课任务失败:', error);
         showDialog('错误', `添加抢课任务失败，请稍后重试或查看控制台\n${error.message || error}\n如果出现了严重的错误，可以考虑开个 issue: https://github.com/GDUTMeow/GDUTCourseGrabber/issues/new`, 'error');
+    }).finally(() => {
+        globalLoading.setAttribute('showed', 'false');
+        flushTaskTable();
     });
 }
 
-function getTasks() {
-    fetch("/api/grabber/", {
-        method: 'GET',
-    }).then(response => {
+async function getTasks() {
+    try {
+        const response = await fetch("/api/grabber/", { method: 'GET' });
         if (response.ok) {
-            return response.json()
+            return await response.json();
         } else {
             console.warn('获取任务列表失败，服务器返回状态码:', response.status);
-            return false;
+            const err = await response.json().catch(() => ({ message: response.statusText }));
+            showDialog('错误', `获取任务列表失败: ${err.message || response.statusText}`, 'error');
+            return null;
+        }
+    } catch (error) {
+        console.error('获取任务列表失败:', error);
+        showDialog('错误', `获取任务列表失败: ${error.message}`, 'error');
+        return null;
+    }
+}
+
+async function getTaskStatus(taskId) {
+    try {
+        const response = await fetch(`/api/grabber/${taskId}/status`, { method: 'GET' });
+        if (response.ok) {
+            const data = await response.json();
+            return data.data;
+        } else {
+            console.warn(`获取任务 ${taskId} 状态失败，服务器返回状态码:`, response.status);
+            return null;
+        }
+    } catch (error) {
+        console.error(`获取任务 ${taskId} 状态失败:`, error);
+        return null;
+    }
+}
+
+const TASK_STATUS_MAP = {
+    0: "IDLE",
+    1: "WAITING",
+    2: "RUNNING",
+};
+
+async function flushTaskTable() {
+    const tasksData = await getTasks();
+    const table_body = document.getElementById('task-table-body');
+    const empty_message = document.getElementById('task-empty-tip');
+    table_body.innerHTML = '';
+
+    if (!tasksData || !tasksData.data || tasksData.data.length === 0) {
+        if (empty_message) empty_message.classList.remove('hidden');
+        return;
+    }
+    if (empty_message) empty_message.classList.add('hidden');
+
+    globalLoading.setAttribute('showed', 'true');
+
+    for (const task of tasksData.data) {
+        const taskId = task.key;
+        const session_id = task.value.account.session_id;
+        const coursesInTask = task.value.courses;
+        const start_time = new Date(task.value.config.start_at).toLocaleString();
+        const delay = task.value.config.delay;
+        const retry = task.value.config.retry ? '开启' : '关闭';
+
+        let statusValue = await getTaskStatus(taskId);
+        let statusText = TASK_STATUS_MAP[statusValue] || "UNKNOWN";
+
+        const course_tags_td = document.createElement('s-td');
+        if (Array.isArray(coursesInTask)) {
+            coursesInTask.forEach(courseObj => {
+                const course_tag = document.createElement('s-chip');
+                let displayInfo = '未知课程';
+                let actualId = null;
+
+                if (typeof courseObj === 'object' && courseObj !== null && typeof courseObj.id !== 'undefined') {
+                    actualId = String(courseObj.id);
+                    displayInfo = `${courseObj.name || '未知名称'} (${actualId})`;
+                }
+
+                course_tag.innerText = displayInfo;
+                course_tag.setAttribute('type', 'outlined');
+                if (actualId) {
+                    course_tag.setAttribute('classId', actualId);
+                    course_tag.setAttribute('onclick', "showCourseDetail(this.getAttribute('classId')); setTimeout(() => this.removeAttribute('checked'), 0);");
+                }
+                course_tags_td.appendChild(course_tag);
+            });
+        }
+
+        const operation_td = document.createElement('s-td');
+        const toggle_btn = document.createElement('s-button');
+
+        if (statusValue === 2) {
+            toggle_btn.innerText = '停止';
+            toggle_btn.setAttribute('onclick', `stopTask('${taskId}')`);
+        } else if (statusValue === 1 || statusValue === 0 || statusValue === 3) {
+            toggle_btn.innerText = '启动';
+            toggle_btn.setAttribute('onclick', `startTask('${taskId}')`);
+        } else {
+            toggle_btn.innerText = '状态';
+            toggle_btn.disabled = true;
+        }
+        toggle_btn.style.marginRight = '8px';
+
+        const remove_task_btn = document.createElement('s-button');
+        remove_task_btn.innerText = '移除';
+        remove_task_btn.setAttribute('taskId', String(taskId));
+        remove_task_btn.setAttribute('onclick', "removeTask(this.getAttribute('taskId'))");
+        remove_task_btn.setAttribute('type', 'outlined');
+
+        operation_td.appendChild(toggle_btn);
+        operation_td.appendChild(remove_task_btn);
+
+        const table_line = document.createElement('s-tr');
+        table_line.appendChild(document.createElement('s-td')).innerText = taskId;
+        table_line.appendChild(document.createElement('s-td')).innerText = session_id;
+        table_line.appendChild(course_tags_td);
+        table_line.appendChild(document.createElement('s-td')).innerText = start_time;
+        table_line.appendChild(document.createElement('s-td')).innerText = delay.replace('PT', '').replace('S', ' 秒');
+        table_line.appendChild(document.createElement('s-td')).innerText = retry;
+        table_line.appendChild(document.createElement('s-td')).innerText = statusText;
+        table_line.appendChild(operation_td);
+
+        table_body.appendChild(table_line);
+    }
+    globalLoading.setAttribute('showed', 'false');
+}
+
+
+async function startTask(taskId) {
+    globalLoading.setAttribute('showed', 'true');
+    fetch(`/api/grabber/${taskId}/start`, { method: 'GET' }).then(response => {
+        if (response.ok) {
+            showDialog('成功', `任务 ${taskId} 已启动。`, 'success');
+        } else {
+            showDialog('错误', `启动任务 ${taskId} 失败: ${response.statusText}`, 'error');
         }
     }).catch(error => {
-        console.error('获取任务列表失败:', error);
-        return false;
-    })
+        showDialog('错误', `启动任务 ${taskId} 失败: ${error.message}`, 'error');
+    }).finally(() => {
+        flushTaskTable();
+        globalLoading.setAttribute('showed', 'false');
+    });
 }
 
-function getTaskStatus(taskId) {
-    fetch("/api/grabber/" + taskId + "/status", {
-        method: 'GET'
-    }).then(response => {
+async function stopTask(taskId) {
+    globalLoading.setAttribute('showed', 'true');
+    fetch(`/api/grabber/${taskId}/stop`, { method: 'GET' }).then(response => {
         if (response.ok) {
-            return response.json().status;
+            showDialog('成功', `任务 ${taskId} 已停止。`, 'success');
         } else {
-            console.log('获取任务状态失败，服务器返回状态码:', response.status);
-            return false;
+            showDialog('错误', `停止任务 ${taskId} 失败: ${response.statusText}`, 'error');
         }
-    })
+    }).finally(() => {
+        flushTaskTable();
+        globalLoading.setAttribute('showed', 'false');
+    });
 }
 
-function flushTaskTable() {
-    getTasks().then(data => {
-        if (!data) {
-            return;
-        }
-        const table_body = document.getElementById('task-table-body');
-        data.data.forEach((task, idx) => {
-            const session_id = task.value.account.session_id;
-            const courses = task.value.courses;
-            const start_time = new Date(task.value.config.start_at).toLocaleString();
-            const delay = task.value.config.delay;
-            const retry = task.value.config.retry ? '开启' : '关闭';
-            const status = getTaskStatus(idx)
-
-            const course_tags = document.createElement('s-td');
-            courses.forEach(course => {
-                const course_tag = document.createElement('s-chip');
-                course_tag.innerText = course;
-                course_tag.setAttribute('type', 'outlined');
-                course_tag.setAttribute('classId', String(course));
-                course_tag.setAttribute('onclick', "showCourseDetail(this.getAttribute('classId')); this.removeAttribute('checked');");
-                course_tags.appendChild(course_tag);
-            });
-
-            const operation_td = document.createElement('s-td');
-            const opeartion_btn = document.createElement('s-button');
-            if (status === 2) { // 2 -> RUNNING
-                opeartion_btn.innerText = '停止';
-            } else {
-                opeartion_btn.innerText = '启动';
-            }
-            const operation_remove_btn = document.createElement('s-button');
-            operation_remove_btn.innerText = '移除';
-            operation_remove_btn.setAttribute('classId', String(idx));
-            operation_remove_btn.setAttribute('onclick', "removeTask(this.getAttribute('classId'))");
-            operation_remove_btn.setAttribute('type', 'outlined');
-            opeartion_btn.style.marginLeft = '8px';
-            operation_td.appendChild(opeartion_btn);
-            operation_td.appendChild(operation_remove_btn);
-
-            const table_line = document.createElement('s-tr');
-            table_line.appendChild(document.createElement('s-td')).innerText = session_id;
-            table_line.appendChild(course_tags);
-            table_line.appendChild(document.createElement('s-td')).innerText = start_time;
-            table_line.appendChild(document.createElement('s-td')).innerText = delay.replace('PT', '').replace('S', ' 秒');
-            table_line.appendChild(document.createElement('s-td')).innerText = retry;
-            table_line.appendChild(document.createElement('s-td')).innerText = status ? (status === 2 ? "RUNNING" : "WAITING") : "IDLE";
-            table_line.appendChild(operation_td);
-
-            table_body.appendChild(table_line);
-        })
-    })
-}
 
 function syncSessionId() {
     const cookieField = document.getElementById('cookie');
     const sessionId = cookieField.value.trim();
-    const taskSessionId = document.getElementById('task-sessionid');
-    taskSessionId.value = sessionId;
+    const taskSessionIdField = document.getElementById('task-sessionid');
+    if (taskSessionIdField) { // 确保元素存在
+        taskSessionIdField.value = sessionId;
+    }
 }
 
 function verifyTimeFormat(timeString) {
     const regex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
+    const field = document.getElementById('task-start-time');
     if (!regex.test(timeString.trim())) {
-        document.getElementById('task-start-time').setAttribute('error', 'true');
+        field.setAttribute('error', 'true');
         return false;
     } else {
-        document.getElementById('task-start-time').removeAttribute('error');
+        field.removeAttribute('error');
     }
     return true;
 }
+
+async function removeTask(taskId) {
+    globalLoading.setAttribute('showed', 'true');
+    try {
+        const response = await fetch(`/api/grabber/${taskId}`, { method: 'DELETE' });
+        if (response.ok) {
+            showDialog('成功', `任务 ${taskId} 已成功移除。`, 'success');
+        } else {
+            const err = await response.json().catch(() => ({ message: response.statusText }));
+            console.warn(`移除任务 ${taskId} 失败:`, err.message || response.status);
+            showDialog('错误', `移除任务 ${taskId} 失败: ${err.message || response.statusText}`, 'error');
+        }
+    } catch (error) {
+        console.error(`移除任务 ${taskId} 失败:`, error);
+        showDialog('错误', `移除任务 ${taskId} 失败: ${error.message}`, 'error');
+    } finally {
+        await flushTaskTable();
+        globalLoading.setAttribute('showed', 'false');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initialize();
+    changeAccentColor();
+    const cookieInput = document.getElementById('cookie');
+    if (cookieInput) {
+        cookieInput.addEventListener('input', syncSessionId);
+    }
+});

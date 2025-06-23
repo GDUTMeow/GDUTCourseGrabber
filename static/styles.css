@@ -119,3 +119,12 @@ s-divider {
     margin-top: 32px;
     margin-bottom: 32px;
 }
+
+ul {
+    line-height: 2em !important;
+}
+
+a[type="no-decoration"] {
+    color: #1d1b1e !important;
+    text-decoration: none !important;
+}

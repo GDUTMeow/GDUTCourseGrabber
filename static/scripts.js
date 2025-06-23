@@ -27,22 +27,41 @@ const TASK_STATUS_MAP = {
 // 已加载课程，避免重复加载
 let displayedCourseIdsInTable = new Set();
 
+var gdutmoe_triggered = false;
+
 function toggleSidebar() {
     const menuBtn = document.getElementById('menu-btn');
-    if (menuBtn.value === '1') {
-        menuBtn.innerHTML = `
-        <svg viewBox="0 -960 960 960">
-            <path d="M640-80 240-480l400-400 71 71-329 329 329 329-71 71Z"></path>
-        </svg>
-        `;
-        menuBtn.value = '0';
+    const faviconImgHtml = '<img src="favicon.png" height="32px" width="32px">';
+    const leftArrowSvg = `
+    <svg viewBox="0 -960 960 960" aria-hidden="true" focusable="false">
+        <path d="M640-80 240-480l400-400 71 71-329 329 329 329-71 71Z"></path>
+    </svg>
+    `;
+    const rightArrowSvg = `
+    <svg viewBox="0 -960 960 960" aria-hidden="true" focusable="false">
+        <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"></path>
+    </svg>
+    `;
+    const trigger_msg = document.createElement('span');
+    trigger_msg.innerHTML = `<div align="center"><img src="GDUTMoe.png" height="200px"></div><p>恭喜你发现了一个小彩蛋，左上角的图标已经换成了可爱的工娘了哦，工娘在这里给你问好 (*^▽^*)</p><p>左上角的图标已经换成了可爱的工娘了哦</p><p>工娘图来源：https://tieba.baidu.com/p/9023794849</p>`
+    if (Math.random() < 0.1 && !gdutmoe_triggered) {
+        menuBtn.innerHTML = faviconImgHtml;
+        showDialog('恭喜',
+            trigger_msg,
+            'success', html = true
+        )
+        gdutmoe_triggered = true;
     } else {
-        menuBtn.innerHTML = `
-        <svg viewBox="0 -960 960 960">
-            <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"></path>
-        </svg>
-        `;
-        menuBtn.value = '1';
+        if (gdutmoe_triggered) {
+            // 触发了彩蛋，不再进行替换
+        }
+        else if (menuBtn.value === '1') {
+            menuBtn.innerHTML = leftArrowSvg;
+            menuBtn.value = '0';
+        } else {
+            menuBtn.innerHTML = rightArrowSvg;
+            menuBtn.value = '1';
+        }
     }
     document.querySelector('s-drawer').toggle();
 }
@@ -74,7 +93,7 @@ function changeAccentColor(color = null) {
     }
 }
 
-function showDialog(title, content, level) {
+function showDialog(title, content, level, html = false) {
     const dialog = document.getElementById('dialog');
     const dialogTitle = document.getElementById('dialog-title');
     const dialogContent = document.getElementById('dialog-descr');
@@ -87,7 +106,12 @@ function showDialog(title, content, level) {
         dialogTitle.innerText = `🔵 ${title}`;
     }
 
-    dialogContent.innerText = content;
+    if (html) {
+        dialogContent.innerHTML = '';
+        dialogContent.appendChild(content);
+    } else {
+        dialogContent.innerText = content;
+    }
     dialog.setAttribute('showed', 'true');
 }
 
@@ -473,17 +497,16 @@ function fetchCourseDetail(classId, positive = true) {
 
             if (positive) {
                 const weekStrDisplay = formatWeeksArrayToDisplayString(weeksArray);
-                const message = `
-课程名称: ${nameFromDetail}
-授课学期: ${term || '未知'}
-授课周次: ${weekStrDisplay} 周
-授课星期: 星期${WEEK_CN[day.toString()] || '?'}
-授课内容类型: ${content_type || '未知'}
-授课地点: ${location || '未指定'} (${location_type || '未知'})
-授课教师: ${teacherStr}
-授课节次: 第 ${sessionStart} 节 - 第 ${sessionEnd} 节
-            `;
-                showDialog('课程详情', message, 'info');
+                const content = document.createElement("ul");
+                content.appendChild(document.createElement("li")).innerText = `课程名称: ${nameFromDetail}`;
+                content.appendChild(document.createElement("li")).innerText = `授课学期: ${term || '未知'}`;
+                content.appendChild(document.createElement("li")).innerText = `授课周次: ${weekStrDisplay} 周`;
+                content.appendChild(document.createElement("li")).innerText = `授课星期: 每周${WEEK_CN[day.toString()] || '?'}`;
+                content.appendChild(document.createElement("li")).innerText = `授课内容类型: ${content_type || '未知'}`;
+                content.appendChild(document.createElement("li")).innerText = `授课地点: ${location || '未指定'} (${location_type || '未知'})`;
+                content.appendChild(document.createElement("li")).innerText = `授课教师: ${teacherStr}`;
+                content.appendChild(document.createElement("li")).innerText = `授课节次: 第 ${sessionStart} - ${sessionEnd} 节`;
+                showDialog('课程详情', content, 'info', html = true);
                 return true;
             } else {
                 return {
@@ -617,7 +640,7 @@ function initializeSelectedCourseTable() {
         teacher_td.innerText = course.teacher || '未知教师';
 
         const weeksDisplay = formatWeeksArrayToDisplayString(course.weeks);
-        let dayDisplay = course.day ? `星期${WEEK_CN[String(course.day)] || '?'}` : "星期？";
+        let dayDisplay = course.day ? `每周${WEEK_CN[String(course.day)] || '?'}` : "每周？";
         let sessionDisplay = "节次未知";
         if (course.sessions && typeof course.sessions.start !== 'undefined' && typeof course.sessions.end !== 'undefined') {
             sessionDisplay = `第 ${course.sessions.start} - ${course.sessions.end} 节`;

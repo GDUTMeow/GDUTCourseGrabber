@@ -18,6 +18,12 @@ WEEK_CN = {
     '7': '日',
 }
 
+const TASK_STATUS_MAP = {
+    0: "IDLE",
+    1: "WAITING",
+    2: "RUNNING",
+}
+
 // 已加载课程，避免重复加载
 let displayedCourseIdsInTable = new Set();
 
@@ -297,8 +303,8 @@ function loadMoreCourses() {
                                 course.category,
                                 course.chosen,
                                 course.limit,
-                                course.source, // 传递 source
-                                course.note    // 传递 note
+                                course.source,
+                                course.note
                             );
                             displayedCourseIdsInTable.add(courseIdStr);
                             newCoursesAddedCount++;
@@ -315,7 +321,6 @@ function loadMoreCourses() {
                     showDialog('提示', '课程列表已经加载完啦，下面已经没有更多课程了', 'info');
                 }
             } else if (coursesData === false) {
-                // Error handled by fetchNewCourses
             } else {
                 console.warn('loadMoreCourses: 未获取到新的课程数据或数据格式不正确。 Data received:', coursesData);
             }
@@ -337,9 +342,9 @@ function addLineToCourseTable(name, id, teacher, category, chosen, limit, source
         name: name,
         teacher: teacher,
         category: category || "",
-        chosen: chosen, // 保持原始类型或 undefined
-        limit: limit,   // 保持原始类型或 undefined
-        source: source, // 保持原始类型或 undefined
+        chosen: chosen,
+        limit: limit,
+        source: source,
         note: note || ""
     };
     add_btn.dataset.courseRaw = JSON.stringify(courseRawData);
@@ -436,9 +441,8 @@ function fetchCourseDetail(classId, positive = true) {
             }
 
             if (!Array.isArray(courseLessons) || courseLessons.length === 0) {
-                // 如果没有授课安排，也返回一个基础结构，以便 addCourse 能继续
                 console.warn(`课程 ${classId} 未找到授课安排，将使用基础信息。`);
-                if (!positive) { // 只有在添加到列表时，才需要返回一个结构
+                if (!positive) {
                     return {
                         term: "未知",
                         weeks: [],
@@ -447,9 +451,8 @@ function fetchCourseDetail(classId, positive = true) {
                         location_type: "未知",
                         location: "未指定",
                         sessions: { start: '?', end: '?' },
-                        // name 和 teacher 将由调用者 (addCourse) 中的 courseRawData 提供
                     };
-                } else { // 如果是直接查看详情，则报错
+                } else {
                     throw new Error('未找到课程详细信息或课程无授课安排。');
                 }
             }
@@ -484,7 +487,6 @@ function fetchCourseDetail(classId, positive = true) {
                 return true;
             } else {
                 return {
-                    // id, name, teacher 将由 addCourse 使用 courseRawData
                     term: term,
                     weeks: weeksArray,
                     day: day,
@@ -495,7 +497,6 @@ function fetchCourseDetail(classId, positive = true) {
                         start: sessionStart,
                         end: sessionEnd
                     },
-                    // 保留详情中的name和teacher，addCourse会决定用哪个
                     nameFromDetail: nameFromDetail,
                     teacherFromDetail: teacherStr
                 };
@@ -506,7 +507,7 @@ function fetchCourseDetail(classId, positive = true) {
             if (positive) {
                 showDialog('错误', `获取课程详情失败，请稍后重试或查看控制台\n${error.message || error}`, 'error');
             }
-            return false; // 指示获取 lesson 详情失败
+            return false;
         })
         .finally(() => {
             globalLoading.setAttribute('showed', 'false');
@@ -534,15 +535,11 @@ function addCourse(classId, courseRawData) {
     fetchCourseDetail(classIdStr, false)
         .then(lessonDetails => {
             globalLoading.setAttribute('showed', 'false');
-            // lessonDetails 可能为 false (如果 fetch 失败) 或一个对象 (即使无授课安排，也会有个基础对象)
-            if (lessonDetails === false && !courseRawData.ignoreLessonsError) { // 如果获取lessons失败且不是强制添加
-                showDialog('错误', `无法添加课程 ${courseRawData.name || classIdStr}，获取上课安排失败。是否仍要添加（仅基础信息）？`, 'error');
-                // 可以提供一个确认对话框，如果用户确认，则再次调用 addCourse 并标记忽略 lessons 错误
-                // 为简化，此处直接提示失败
+            if (lessonDetails === false) {
+                showDialog('错误', `无法添加课程 ${courseRawData.name || classIdStr}，获取上课安排失败`, 'error');
                 return;
             }
 
-            // 确保 lessonDetails 是一个对象，即使是空的
             const safeLessonDetails = (typeof lessonDetails === 'object' && lessonDetails !== null) ? lessonDetails : {
                 term: "未知", weeks: [], day: null, content_type: "未知",
                 location_type: "未知", location: "未指定", sessions: { start: '?', end: '?' }
@@ -575,7 +572,7 @@ function addCourse(classId, courseRawData) {
                 initializeSelectedCourseTable();
             }
         })
-        .catch(error => { // 这个 catch 主要捕获 fetchCourseDetail 内部的 promise reject
+        .catch(error => {
             globalLoading.setAttribute('showed', 'false');
             console.error(`添加课程 ${classIdStr} 过程出错:`, error);
             showDialog('错误', `添加课程 ${courseRawData.name || classIdStr} 时发生错误，请查看控制台。`, 'error');
@@ -755,12 +752,6 @@ async function getTaskStatus(taskId) {
     }
 }
 
-const TASK_STATUS_MAP = {
-    0: "IDLE",
-    1: "WAITING",
-    2: "RUNNING",
-};
-
 async function flushTaskTable() {
     const tasksData = await getTasks();
     const table_body = document.getElementById('task-table-body');
@@ -811,15 +802,12 @@ async function flushTaskTable() {
         const operation_td = document.createElement('s-td');
         const toggle_btn = document.createElement('s-button');
 
-        if (statusValue === 2) {
+        if (statusValue === 1 | statusValue === 2) {
             toggle_btn.innerText = '停止';
             toggle_btn.setAttribute('onclick', `stopTask('${taskId}')`);
-        } else if (statusValue === 1 || statusValue === 0 || statusValue === 3) {
+        } else if (statusValue === 0) {
             toggle_btn.innerText = '启动';
             toggle_btn.setAttribute('onclick', `startTask('${taskId}')`);
-        } else {
-            toggle_btn.innerText = '状态';
-            toggle_btn.disabled = true;
         }
         toggle_btn.style.marginRight = '8px';
 
@@ -866,7 +854,7 @@ async function startTask(taskId) {
 
 async function stopTask(taskId) {
     globalLoading.setAttribute('showed', 'true');
-    fetch(`/api/grabber/${taskId}/stop`, { method: 'GET' }).then(response => {
+    fetch(`/api/grabber/${taskId}/reset`, { method: 'GET' }).then(response => {
         if (response.ok) {
             showDialog('成功', `任务 ${taskId} 已停止。`, 'success');
         } else {
@@ -883,7 +871,7 @@ function syncSessionId() {
     const cookieField = document.getElementById('cookie');
     const sessionId = cookieField.value.trim();
     const taskSessionIdField = document.getElementById('task-sessionid');
-    if (taskSessionIdField) { // 确保元素存在
+    if (taskSessionIdField) {
         taskSessionIdField.value = sessionId;
     }
 }

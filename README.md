@@ -56,10 +56,13 @@
 
 ## Contributors
 
+<div align="center">
+
 | <a href="https://github.com/GamerNoTitle" title="GamerNoTitle"><img src="https://avatars.githubusercontent.com/u/28426291?v=4" width="100px;" alt="GamerNoTitle" style="border-radius: 9999px;" /></a> | <a href="https://github.com/ricky8955555" title="ricky8955555"><img src="https://avatars.githubusercontent.com/u/24487646?v=4" width="100px;" alt="ricky8955555" style="border-radius: 9999px;" /></a> | <a href="https://github.com/KeqingMoe" title="KeqingMoe"><img src="https://avatars.githubusercontent.com/u/59642397?v=4" width="100px;" alt="KeqingMoe" style="border-radius: 9999px;" /></a> | <a href="https://github.com/Ron-1337" title="Ron-1337"><img src="https://avatars.githubusercontent.com/u/53028934?v=4" width="100px;" alt="Ron-1337" style="border-radius: 9999px;" /></a> |
 | :----------------------------------------------------------: | :----------------------------------------------------------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
 |  [GamerNoTitle (Pesy Wu)](https://github.com/GamerNoTitle)   |  [ricky8955555 (Phrinky)](https://github.com/ricky8955555)   |     [KeqingMoe (刻晴Moe)](https://github.com/KeqingMoe)      |        [Ron-1337 (Ron)](https://github.com/Ron-1337)         |
 
+</div>
 
 ## Credit
 

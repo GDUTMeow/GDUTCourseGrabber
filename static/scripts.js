@@ -8,6 +8,11 @@ globalPageSize = 20;
 globalLoggedIn = false;
 globalCourses = []; // 用于存储用户已选择的课程详情，现在将从localStorage加载和保存
 
+globalAutoRefreshTask = false; // 是否自动刷新任务列表
+globalIndicatorInterval = null; // 用于存储自动刷新任务的定时器
+currentIndicatorSteps = 0;
+totalIndicatorStepsForCycle = 0;
+
 WEEK_CN = {
     '1': '一',
     '2': '二',
@@ -809,6 +814,7 @@ async function flushTaskTable() {
         let statusText = TASK_STATUS_MAP[statusValue] || "未知";
 
         const course_tags_td = document.createElement('s-td');
+        course_tags_td.style.alignContent = 'center';
         if (Array.isArray(coursesInTask)) {
             coursesInTask.forEach(courseObj => {
                 const course_tag = document.createElement('s-chip');
@@ -827,10 +833,12 @@ async function flushTaskTable() {
                     course_tag.setAttribute('onclick', "showCourseDetail(this.getAttribute('classId')); setTimeout(() => this.removeAttribute('checked'), 0);");
                 }
                 course_tags_td.appendChild(course_tag);
+                course_tags_td.appendChild(document.createElement('br'));
             });
         }
 
         const operation_td = document.createElement('s-td');
+        operation_td.style.alignContent = 'center';
         const toggle_btn = document.createElement('s-button');
 
         if (statusValue === 1 | statusValue === 2) {
@@ -852,13 +860,33 @@ async function flushTaskTable() {
         operation_td.appendChild(remove_task_btn);
 
         const table_line = document.createElement('s-tr');
-        table_line.appendChild(document.createElement('s-td')).innerText = taskId;
-        table_line.appendChild(document.createElement('s-td')).innerText = session_id;
+
+        const task_id_td = document.createElement('s-td');
+        task_id_td.style.alignContent = 'center';
+        table_line.appendChild(task_id_td).innerText = taskId;
+
+        const session_id_td = document.createElement('s-td');
+        session_id_td.style.alignContent = 'center';
+        table_line.appendChild(session_id_td).innerText = session_id;
         table_line.appendChild(course_tags_td);
-        table_line.appendChild(document.createElement('s-td')).innerText = start_time;
-        table_line.appendChild(document.createElement('s-td')).innerText = delay.replace('PT', '').replace('S', ' 秒');
-        table_line.appendChild(document.createElement('s-td')).innerText = retry;
-        table_line.appendChild(document.createElement('s-td')).innerText = statusText;
+
+        const start_time_td = document.createElement('s-td');
+        start_time_td.style.alignContent = 'center';
+        table_line.appendChild(start_time_td).innerText = start_time;
+
+        const delay_td = document.createElement('s-td');
+        delay_td.style.alignContent = 'center';
+        delay_td.innerText = delay.replace('PT', '').replace('S', ' 秒');
+        table_line.appendChild(delay_td);
+
+        const retry_td = document.createElement('s-td');
+        retry_td.style.alignContent = 'center';
+        table_line.appendChild(retry_td).innerText = retry;
+
+        const status_text_td = document.createElement('s-td');
+        status_text_td.style.alignContent = 'center';
+        table_line.appendChild(status_text_td).innerText = statusText;
+
         table_line.appendChild(operation_td);
 
         table_body.appendChild(table_line);
@@ -943,6 +971,62 @@ function decodeHtmlEntities(text) {
     const textarea = document.createElement('textarea');
     textarea.innerHTML = text;
     return textarea.value;
+}
+
+function toggleAutoRefreshTaskTable() {
+    const delayInput = document.getElementById('task-table-auto-refresh-delay');
+    const delay = Number(delayInput.value);
+    const refreshIndicator = document.getElementById('task-table-auto-refresh-indicator');
+
+    if (globalAutoRefreshTask) {
+        clearInterval(globalAutoRefreshTask);
+        globalAutoRefreshTask = null;
+
+        if (globalIndicatorInterval) {
+            clearInterval(globalIndicatorInterval);
+            globalIndicatorInterval = null;
+        }
+
+        refreshIndicator.classList.add('hidden');
+        refreshIndicator.value = 0;
+        currentIndicatorSteps = 0;
+    } else {
+        if (isNaN(delay)) {
+            showDialog('错误', "刷新时间必须是一个数字！", 'error');
+            delayInput.focus();
+            return;
+        }
+        if (delay < 1) {
+            showDialog('错误', "刷新时间必须大于等于 1 秒！", 'error');
+            delayInput.focus();
+            return;
+        }
+
+        refreshIndicator.classList.remove('hidden');
+        refreshIndicator.max = 100;
+        refreshIndicator.value = 0;
+
+
+        currentIndicatorSteps = 0;
+        totalIndicatorStepsForCycle = delay * 10;
+
+        globalIndicatorInterval = setInterval(() => {
+            currentIndicatorSteps++;
+            let percentage = (currentIndicatorSteps / totalIndicatorStepsForCycle) * 100;
+            if (percentage > 100) {
+                percentage = 100;
+            }
+
+            refreshIndicator.value = percentage;
+        }, 100);
+
+        globalAutoRefreshTask = setInterval(() => {
+            flushTaskTable();
+
+            currentIndicatorSteps = 0;
+            refreshIndicator.value = 0;
+        }, delay * 1000); // delay is in seconds
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

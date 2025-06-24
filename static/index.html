@@ -280,6 +280,9 @@
                 <div align="center" style="margin-bottom: 16px;">
                   <s-alert type="warning">任务说明：空闲/完成时，点击「启动」可以开始任务；等待开始/正在进行时，点击「停止」可以终止任务。</s-alert>
                 </div>
+                <div align="right" style="margin-bottom: 16px;">
+                  <s-button onclick="flushTaskTable()" type="outlined">刷新任务列表</s-button>
+                </div>
                 <s-table style="overflow: auto; display: block; text-align: center;">
                   <s-thead>
                     <s-tr>

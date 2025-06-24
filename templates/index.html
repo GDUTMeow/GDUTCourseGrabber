@@ -58,7 +58,7 @@
                     {% if course.preset %}
                     <input type="hidden" name="preset" value="true">
                     <button type="button" class="btn save-remark"
-                        onclick="saveRemark({{ course.kcrwdm }})">保存备注</button>
+                        onclick="saveRemark('{{ course.kcrwdm }}')">保存备注</button>
                     {% else %}
                     <input type="hidden" name="preset" value="false">
                     {% endif %}
@@ -104,10 +104,19 @@
         <br>
         <div class="grab-course-config">
             <label for="start-time">抢课开始时间:</label>
-            <input type="datetime-local" id="start-time" name="start_time" value="{{ start_time | default('2024-09-01 12:00')}}">
+            <input type="datetime-local" id="start-time" name="start_time"
+                value="{{ start_time | default('2024-09-01 12:00')}}">
 
             <label for="offset">提前抢课时间 (秒):</label>
             <input type="number" class="offset" id="offset" name="offset" min="0" value="{{ offset | default(300) }}">
+
+            <label for="queue-mode">
+                <input type="checkbox" id="queue-mode" name="queue_mode" {% if queue_mode %}checked{% endif %}>
+                顺序模式
+                <a href="https://github.com/GDUTMeow/GDUTCourseGrabber?tab=readme-ov-file#BETA%E5%8A%9F%E8%83%BD"><span
+                        style="cursor: pointer; color: #007bff;" title="除非您知道您在做什么，否则不应更改此选项"><span
+                            style="color: red;">[BETA]</span></span></a>
+            </label>
 
             <button type="button" class="btn" id="save-config-btn">保存配置</button>
         </div>

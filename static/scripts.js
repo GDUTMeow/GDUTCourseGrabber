@@ -625,25 +625,39 @@ function removeCourse(classId) {
 function initializeSelectedCourseTable() {
     const table_body = document.getElementById('selected-table-body');
     const empty_message = document.getElementById('operation-panel-course-empty');
-    table_body.innerHTML = '';
+    table_body.innerHTML = ''; // 清空现有内容
 
-    if (globalCourses.length === 0) {
+    if (!globalCourses || globalCourses.length === 0) {
         empty_message.classList.remove('hidden');
+        document.getElementById('selected-courses-count').innerText = '0';
         return;
     }
     empty_message.classList.add('hidden');
 
-    globalCourses.forEach(course => {
+    globalCourses.forEach((course, index) => { // 添加 index 参数
         const table_line = document.createElement('s-tr');
         const name_td = document.createElement('s-td');
         const teacher_td = document.createElement('s-td');
         const class_time_td = document.createElement('s-td');
         const operation_td = document.createElement('s-td');
-        const remove_btn = document.createElement('s-button');
+
+        // 新增按钮
+        const pin_top_btn = document.createElement('s-button');
+
+        const move_up_btn = document.createElement('s-button');
+        move_up_btn.setAttribute("type", "elevated");
+
         const detail_btn = document.createElement('s-button');
+        detail_btn.setAttribute("type", "filled-tonal");
+        
+        const remove_btn = document.createElement('s-button');
+        remove_btn.setAttribute("type", "outlined");
 
         name_td.innerText = `${course.name || '未知课程'} (${course.id})`;
+        name_td.style.alignContent = "center";
+
         teacher_td.innerText = course.teacher || '未知教师';
+        teacher_td.style.alignContent = "center"
 
         const weeksDisplay = formatWeeksArrayToDisplayString(course.weeks);
         let dayDisplay = course.day ? `每周${WEEK_CN[String(course.day)] || '?'}` : "每周？";
@@ -651,21 +665,47 @@ function initializeSelectedCourseTable() {
         if (course.sessions && typeof course.sessions.start !== 'undefined' && typeof course.sessions.end !== 'undefined') {
             sessionDisplay = `第 ${course.sessions.start} - ${course.sessions.end} 节`;
         }
-
         class_time_td.innerText = `第 ${weeksDisplay} 周，${dayDisplay}，${sessionDisplay}`;
+        class_time_td.style.alignContent = "center"
 
+        // 置顶按钮
+        pin_top_btn.innerText = '置顶';
+        pin_top_btn.setAttribute('classId', String(course.id));
+        pin_top_btn.setAttribute('onclick', `pinCourseToTopInList('${String(course.id)}')`);
+        pin_top_btn.style.marginRight = '8px';
+        if (index === 0) {
+            pin_top_btn.setAttribute('disabled', 'true');
+        }
+
+        // 上移按钮
+        move_up_btn.innerText = '上移';
+        move_up_btn.setAttribute('classId', String(course.id));
+        move_up_btn.setAttribute('onclick', `moveCourseUpInList('${String(course.id)}')`);
+        if (index === 0) {
+            move_up_btn.setAttribute('disabled', 'true');
+        }
+
+        // 详情按钮
         detail_btn.innerText = '详情';
         detail_btn.setAttribute('classId', String(course.id));
-        detail_btn.setAttribute('onclick', "showCourseDetail(this.getAttribute('classId'))");
+        detail_btn.setAttribute('onclick', `showCourseDetail('${String(course.id)}')`);
         detail_btn.style.marginRight = '8px';
 
+        // 移除按钮
         remove_btn.innerText = '移除';
         remove_btn.setAttribute('classId', String(course.id));
-        remove_btn.setAttribute('onclick', "removeCourse(this.getAttribute('classId'))");
+        remove_btn.setAttribute('onclick', `removeCourse('${String(course.id)}')`);
         remove_btn.setAttribute('type', 'outlined');
 
-        operation_td.appendChild(detail_btn);
-        operation_td.appendChild(remove_btn);
+        const first_line_container = document.createElement("div");
+        first_line_container.style.marginBottom = "8px";
+        first_line_container.appendChild(pin_top_btn);
+        first_line_container.appendChild(move_up_btn);
+        const second_line_container = document.createElement("div");
+        second_line_container.appendChild(detail_btn);
+        second_line_container.appendChild(remove_btn);
+        operation_td.appendChild(first_line_container);
+        operation_td.appendChild(second_line_container);
 
         table_line.appendChild(name_td);
         table_line.appendChild(teacher_td);
@@ -1025,7 +1065,58 @@ function toggleAutoRefreshTaskTable() {
 
             currentIndicatorSteps = 0;
             refreshIndicator.value = 0;
-        }, delay * 1000); // delay is in seconds
+        }, delay * 1000);
+    }
+}
+
+function moveCourseUpInList(courseId) {
+    const idToMove = String(courseId);
+    if (!Array.isArray(window.globalCourses)) {
+        console.error("globalCourses is not defined or not an array.");
+        return;
+    }
+    const index = window.globalCourses.findIndex(course => String(course.id) === idToMove);
+
+    if (index > 0) { 
+        [window.globalCourses[index - 1], window.globalCourses[index]] = [window.globalCourses[index], window.globalCourses[index - 1]];
+
+        try {
+            localStorage.setItem('selectedCourses', JSON.stringify(window.globalCourses));
+        } catch (e) {
+            console.error("Error saving selected courses to localStorage:", e);
+        }
+
+        if (typeof window.initializeSelectedCourseTable === 'function') {
+            window.initializeSelectedCourseTable();
+        } else {
+            console.error("initializeSelectedCourseTable function is not defined.");
+        }
+    }
+}
+
+function pinCourseToTopInList(courseId) {
+    const idToPin = String(courseId);
+    if (!Array.isArray(window.globalCourses)) {
+        console.error("globalCourses is not defined or not an array.");
+        return;
+    }
+    const index = window.globalCourses.findIndex(course => String(course.id) === idToPin);
+
+    if (index > 0) {
+        const [courseToPin] = window.globalCourses.splice(index, 1);
+        window.globalCourses.unshift(courseToPin);
+
+        try {
+            localStorage.setItem('selectedCourses', JSON.stringify(window.globalCourses));
+        } catch (e) {
+            console.error("Error saving selected courses to localStorage:", e);
+        }
+
+        if (typeof window.initializeSelectedCourseTable === 'function') {
+            window.initializeSelectedCourseTable();
+        } else {
+            console.error("initializeSelectedCourseTable function is not defined.");
+        }
     }
 }
 

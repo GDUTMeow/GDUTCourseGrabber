@@ -220,16 +220,18 @@
                 <div align="center" style="margin-top: 16px;">
                   <s-button id="load-more-btn" onclick="loadMoreCourses()"> <s-circular-progress indeterminate="true"
                       class="hidden" id="load-more-btn-loading"></s-circular-progress> 加载更多 </s-button>
-                  <s-button id="back-to-top" onclick="document.querySelector('s-scroll-view').scrollTo({ top: 0, behavior: 'smooth' })"> 回到顶部 </s-button>
+                  <s-button id="back-to-top"
+                    onclick="document.querySelector('s-scroll-view').scrollTo({ top: 0, behavior: 'smooth' })"> 回到顶部
+                  </s-button>
                 </div>
               </div>
             </s-card>
           </div>
           <div id="operation-panel" style="margin-top: 32px; margin-bottom: 32px;" align="center" class="hidden">
             <s-card id="operation-panel" style="margin-top: 16px; margin-bottom: 16px;">
-              <div slot="headline">抢课面板</div>
+              <div slot="headline">任务添加</div>
               <div slot="text" style="margin-top: 16px;">
-                <p>当前已经选择了以下课程（共 <span id="selected-courses-count">0</span> 门）：</p>
+                <p>当前已经选择了以下课程（共 <span id="selected-courses-count">0</span> 门）</p>
                 <s-table style="overflow: auto; display: block; text-align: center;">
                   <s-thead>
                     <s-tr>
@@ -323,15 +325,18 @@
         </div>
     </s-dialog>
   </s-page>
-  <script>
-    //safari user-scalable=no
-    document.addEventListener('gesturestart', (event) => event.preventDefault())
-    window.addEventListener('load', () => {
-    });
-  </script>
   <script src="scripts.js"></script>
   <script src="sober.min.js"></script>
   <script src="theme.js"></script>
+  <script src="pangu.min.js"></script>
+  <script>
+    //safari user-scalable=no
+    document.addEventListener('gesturestart', (event) => event.preventDefault())
+    document.addEventListener('DOMContentLoaded', () => {
+      pangu.autoSpacingPage();
+    });
+  </script>
+
 </body>
 
 </html>

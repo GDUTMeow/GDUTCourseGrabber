@@ -321,7 +321,7 @@ function loadMoreCourses() {
                         const courseIdStr = String(course.id);
                         if (!displayedCourseIdsInTable.has(courseIdStr)) {
                             addLineToCourseTable(
-                                course.name,
+                                decodeHtmlEntities(course.name),
                                 course.id,
                                 course.teacher,
                                 course.category,
@@ -498,9 +498,9 @@ function fetchCourseDetail(classId, positive = true) {
             if (positive) {
                 const weekStrDisplay = formatWeeksArrayToDisplayString(weeksArray);
                 const content = document.createElement("ul");
-                content.appendChild(document.createElement("li")).innerText = `课程名称: ${nameFromDetail}`;
+                content.appendChild(document.createElement("li")).innerText = `课程教学班: ${nameFromDetail}`;
                 content.appendChild(document.createElement("li")).innerText = `授课学期: ${term || '未知'}`;
-                content.appendChild(document.createElement("li")).innerText = `授课周次: ${weekStrDisplay} 周`;
+                content.appendChild(document.createElement("li")).innerText = `授课周次: 第 ${weekStrDisplay} 周`;
                 content.appendChild(document.createElement("li")).innerText = `授课星期: 每周${WEEK_CN[day.toString()] || '?'}`;
                 content.appendChild(document.createElement("li")).innerText = `授课内容类型: ${content_type || '未知'}`;
                 content.appendChild(document.createElement("li")).innerText = `授课地点: ${location || '未指定'} (${location_type || '未知'})`;
@@ -550,7 +550,7 @@ function addCourse(classId, courseRawData) {
     const classIdStr = String(classId);
     const existingCourse = globalCourses.find(course => String(course.id) === classIdStr);
     if (existingCourse) {
-        showDialog('信息', `课程 ${courseRawData.name || existingCourse.name} (${classIdStr}) 已经在列表中了。`, 'info');
+        showDialog('信息', `课程 「${courseRawData.name || existingCourse.name} (${classIdStr})」 已经在列表中了。`, 'info');
         return;
     }
 
@@ -559,7 +559,7 @@ function addCourse(classId, courseRawData) {
         .then(lessonDetails => {
             globalLoading.setAttribute('showed', 'false');
             if (lessonDetails === false) {
-                showDialog('错误', `无法添加课程 ${courseRawData.name || classIdStr}，获取上课安排失败`, 'error');
+                showDialog('错误', `无法添加课程 「${courseRawData.name || classIdStr}」，获取上课安排失败`, 'error');
                 return;
             }
 
@@ -590,15 +590,15 @@ function addCourse(classId, courseRawData) {
 
             globalCourses.push(courseToAdd);
             saveCoursesToLocalStorage();
-            showDialog('成功', `课程 ${courseToAdd.name} (${classIdStr}) 已成功添加到列表。`, 'success');
+            showDialog('成功', `课程 「${courseToAdd.name} (${classIdStr})」 已成功添加到列表。`, 'success');
             if (document.getElementById('operation-panel').classList.contains('hidden') === false) {
                 initializeSelectedCourseTable();
             }
         })
         .catch(error => {
             globalLoading.setAttribute('showed', 'false');
-            console.error(`添加课程 ${classIdStr} 过程出错:`, error);
-            showDialog('错误', `添加课程 ${courseRawData.name || classIdStr} 时发生错误，请查看控制台。`, 'error');
+            console.error(`添加课程 「${classIdStr}」 过程出错:`, error);
+            showDialog('错误', `添加课程 「${courseRawData.name || classIdStr}」 时发生错误，请查看控制台。`, 'error');
         });
 }
 
@@ -610,10 +610,10 @@ function removeCourse(classId) {
 
     if (globalCourses.length < originalLength) {
         saveCoursesToLocalStorage();
-        showDialog('成功', `课程 ${courseToRemove ? courseToRemove.name : ''} (${classIdStr}) 已从列表中移除。`, 'success');
+        showDialog('成功', `课程 「${courseToRemove ? courseToRemove.name : ''} (${classIdStr})」 已从列表中移除。`, 'success');
         initializeSelectedCourseTable();
     } else {
-        showDialog('信息', `课程 (${classIdStr}) 未在列表中找到。`, 'info');
+        showDialog('信息', `课程 「(${classIdStr})」 未在列表中找到。`, 'info');
     }
 }
 
@@ -635,6 +635,7 @@ function initializeSelectedCourseTable() {
         const class_time_td = document.createElement('s-td');
         const operation_td = document.createElement('s-td');
         const remove_btn = document.createElement('s-button');
+        const detail_btn = document.createElement('s-button');
 
         name_td.innerText = `${course.name || '未知课程'} (${course.id})`;
         teacher_td.innerText = course.teacher || '未知教师';
@@ -646,13 +647,19 @@ function initializeSelectedCourseTable() {
             sessionDisplay = `第 ${course.sessions.start} - ${course.sessions.end} 节`;
         }
 
-        class_time_td.innerText = `${weeksDisplay} 周，${dayDisplay}，${sessionDisplay}`;
+        class_time_td.innerText = `第 ${weeksDisplay} 周，${dayDisplay}，${sessionDisplay}`;
+
+        detail_btn.innerText = '详情';
+        detail_btn.setAttribute('classId', String(course.id));
+        detail_btn.setAttribute('onclick', "showCourseDetail(this.getAttribute('classId'))");
+        detail_btn.style.marginRight = '8px';
 
         remove_btn.innerText = '移除';
         remove_btn.setAttribute('classId', String(course.id));
         remove_btn.setAttribute('onclick', "removeCourse(this.getAttribute('classId'))");
         remove_btn.setAttribute('type', 'outlined');
 
+        operation_td.appendChild(detail_btn);
         operation_td.appendChild(remove_btn);
 
         table_line.appendChild(name_td);
@@ -930,6 +937,12 @@ async function removeTask(taskId) {
         await flushTaskTable();
         globalLoading.setAttribute('showed', 'false');
     }
+}
+
+function decodeHtmlEntities(text) {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = text;
+    return textarea.value;
 }
 
 document.addEventListener('DOMContentLoaded', () => {

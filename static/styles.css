@@ -90,24 +90,27 @@ th {
     margin: 0 auto;
     padding: 20px;
     position: fixed;
-    top: -100%;
-    left: 20%;
-    transform: translateX(-50%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     animation: slideIn 0.3s forwards;
+    min-width: 400px;
 }
 
 @keyframes slideIn {
     from {
         top: -100%;
+        opacity: 0;
     }
 
     to {
-        top: 10%;
+        top: 50%;
+        opacity: 1;
     }
 }
 
 .dialog .dialog-header {
-    width: 400px;
+    width: 100%;
     padding: 10px 0;
     display: flex;
     border-bottom: 1px solid #eee;
@@ -190,8 +193,10 @@ input[readonly] {
 .control-buttons {
     display: flex;
     align-items: center;
-    gap: 20px; /* 调整元素间距 */
-    flex-wrap: wrap; /* 允许换行，适应小屏幕 */
+    gap: 20px;
+    /* 调整元素间距 */
+    flex-wrap: wrap;
+    /* 允许换行，适应小屏幕 */
     margin-top: 20px;
 }
 
@@ -202,7 +207,8 @@ input[readonly] {
 
 .grab-course-config label {
     margin-right: 5px;
-    white-space: nowrap; /* 防止标签换行 */
+    white-space: nowrap;
+    /* 防止标签换行 */
 }
 
 .grab-course-config input[type="datetime-local"],
@@ -217,7 +223,8 @@ input[readonly] {
 
 .grab-course-config button {
     padding: 8px 15px;
-    background: #28a745; /* 使用绿色按钮 */
+    background: #28a745;
+    /* 使用绿色按钮 */
     color: white;
     border: none;
     border-radius: 4px;
@@ -225,7 +232,8 @@ input[readonly] {
 }
 
 .grab-course-config button:hover {
-    background: #218838; /* 深绿色按钮 */
+    background: #218838;
+    /* 深绿色按钮 */
 }
 
 .control-buttons .btn {
@@ -246,3 +254,23 @@ input[readonly] {
     width: 200px;
 }
 
+@media (max-width: 400px) {
+    .dialog {
+        min-width: unset;
+        width: 100%;
+        max-width: 100vw;
+        left: 50%;
+        top: 50%;
+        border-radius: 0;
+        transform: translate(-50%, -50%);
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .dialog .dialog-header,
+    .dialog .dialog-content {
+        padding-left: 10px;
+        padding-right: 10px;
+        box-sizing: border-box;
+    }
+}

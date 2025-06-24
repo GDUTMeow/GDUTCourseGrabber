@@ -31,7 +31,7 @@ const showConfirmDialog = (title, msg) => {
         yes.addEventListener('click', yesCallback);
         no.addEventListener('click', noCallback);
     });
-    
+
     dialogTitle.textContent = title;
     dialogBody.textContent = msg;
     dialog.showModal();
@@ -44,7 +44,7 @@ let pageSize = 10;
 let allCourses = [];
 
 document.addEventListener("DOMContentLoaded", function () {
-    document.querySelector(".add-course").addEventListener("click", function() {
+    document.querySelector(".add-course").addEventListener("click", function () {
         addCourseEntry();
     });
     document.getElementById("fetch-courses-btn").addEventListener("click", fetchCourses);
@@ -117,12 +117,12 @@ function fetchCourses() {
     }
     // showDialog('信息', "正在获取课程，请耐心等待，获取时间视课程量而定");
     fetch('/fetch_courses', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: new URLSearchParams({ 'cookie': cookie })
-        })
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({ 'cookie': cookie })
+    })
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -149,7 +149,7 @@ function displayCurrentPage() {
 
     const start = (currentPage - 1) * pageSize;
     const end = Math.min(start + pageSize, allCourses.length);
-    
+
     for (let i = start; i < end; i++) {
         const course = allCourses[i];
         const row = document.createElement('tr');
@@ -202,20 +202,20 @@ function addCourse(course_id) {
             remark: remark
         })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showDialog('信息', '课程添加成功');
-            // 将新课程添加到已选课程列表
-            addCourseToSelectedList(data);
-        } else {
-            showDialog('错误', data.error || '添加课程失败');
-        }
-    })
-    .catch(error => {
-        console.error('添加课程失败:', error);
-        showDialog('错误', '添加课程失败，请查看控制台错误信息。');
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showDialog('信息', '课程添加成功');
+                // 将新课程添加到已选课程列表
+                addCourseToSelectedList(data);
+            } else {
+                showDialog('错误', data.error || '添加课程失败');
+            }
+        })
+        .catch(error => {
+            console.error('添加课程失败:', error);
+            showDialog('错误', '添加课程失败，请查看控制台错误信息。');
+        });
 }
 
 function addCourseToSelectedList(course) {
@@ -260,8 +260,8 @@ function updatePagination() {
 
 function start() {
     fetch('/start', {
-            method: 'POST',
-        })
+        method: 'POST',
+    })
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -278,8 +278,8 @@ function start() {
 
 function stop() {
     fetch('/stop', {
-            method: 'POST',
-        })
+        method: 'POST',
+    })
         .then(response => response.json())
         .then(data => {
             showDialog('信息', data.message);
@@ -314,13 +314,13 @@ function showDetail(courseId) {
             courseId: courseId
         })
     })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Received data:', data); // 调试信息
-        if (data.success) {
-            const courseDetail = data.data;
-            console.log('Course Detail:', courseDetail); // 调试信息
-            const detailHTML = `
+        .then(response => response.json())
+        .then(data => {
+            console.log('Received data:', data); // 调试信息
+            if (data.success) {
+                const courseDetail = data.data;
+                console.log('Course Detail:', courseDetail); // 调试信息
+                const detailHTML = `
                 <p><strong>课程名称:</strong> ${courseDetail.course_name || 'N/A'}</p>
                 <p><strong>学期:</strong> ${courseDetail.term || 'N/A'}</p>
                 <p><strong>教学方式:</strong> ${courseDetail.teach_style || 'N/A'}</p>
@@ -329,15 +329,15 @@ function showDetail(courseId) {
                 <p><strong>上课地点:</strong> ${courseDetail.location || 'N/A'}</p>
                 <p><strong>上课时间:</strong> ${courseDetail.course_time || 'N/A'}</p>
             `;
-            showDialog('课程详细信息', detailHTML);
-        } else {
-            showDialog('错误', `获取课程详细信息失败: ${data.msg}`);
-        }
-    })
-    .catch(error => {
-        console.error('获取课程详细信息失败:', error);
-        showDialog('错误', '获取课程详细信息失败，请查看控制台错误信息。');
-    });
+                showDialog('课程详细信息', detailHTML);
+            } else {
+                showDialog('错误', `获取课程详细信息失败: ${data.msg}`);
+            }
+        })
+        .catch(error => {
+            console.error('获取课程详细信息失败:', error);
+            showDialog('错误', '获取课程详细信息失败，请查看控制台错误信息。');
+        });
 }
 
 function startPolling() {
@@ -354,15 +354,15 @@ function saveRemark(kcrwdm) {
     const remark = remarkInput.value;
 
     fetch('/update_remark', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: new URLSearchParams({
-                'kcrwdm': kcrwdm,
-                'remark': remark
-            })
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+            'kcrwdm': kcrwdm,
+            'remark': remark
         })
+    })
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -400,11 +400,15 @@ function saveGrabCourseConfig() {
     formData.set('start_time', startTimeInput.replace('T', ' ')); // 转换为 "YYYY-MM-DD HH:MM:SS" 格式
     formData.set('offset', offsetInput);
 
+    // 顺序模式
+    const queueModeChecked = document.getElementById('queue-mode').checked;
+    formData.set('queue_mode', queueModeChecked ? 'true' : 'false');
+
     // 发送保存配置的请求
     fetch('/update_config', {
-            method: 'POST',
-            body: formData
-        })
+        method: 'POST',
+        body: formData
+    })
         .then(response => {
             if (response.redirected) {
                 window.location.href = response.url; // 重定向到首页

@@ -29,6 +29,7 @@ class Config(BaseModel):
         cookie: str = ""
     
     account: AccountConfig = AccountConfig()
+    queue_mode: bool = False
     delay: float = 0.5
     offset: int = 300
     start_time: Optional[str] = None
@@ -265,10 +266,18 @@ def grab_course(course: Course, cookie: str) -> bool:
         log_message(
             f"抢课请求发送，课程ID: {course.kcrwdm}, 名称: {course.kcmc}, 老师: {course.teacher}, 响应: {response.text}"
         )
+        if "当前不是选课时间" in response.text:
+            return False
         if "您已经选了该门课程" in response.text:
             return True
-        if "超出选课要求门数" in response.text:
+        if "1" in response.text:
             return True
+        # 满人了（目前不知道具体的提示是什么，还没遇到）
+        if "满" in response.text: 
+            return True
+        if "超出" in response.text:
+            return True
+
     except Exception as e:
         log_message(f"抢课失败: {e}")
 
@@ -282,33 +291,60 @@ def start_grab_course_task(config: Config) -> None:
     Args:
         config (Config): 当前的配置对象。
     """
+    print ("start_grab_course_task 1")
+    try:
+        # 解析抢课开始时间
+        start_time = datetime.strptime(config.start_time, "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        return jsonify({"error": "抢课开始时间格式不正确，应为 YYYY-MM-DD HH:MM:SS"}), 400
+    
+    # 等待抢课开始
+    target_time = start_time - timedelta(seconds=config.offset)
+    while task_running:
+        current_time = datetime.now()
+        
+        if current_time > target_time:
+            break
+
+        log_message(f"当前时间 {current_time.strftime('%Y-%m-%d %H:%M:%S')} 不在预设的抢课时间范围内")
+        time.sleep(0.1)
+    print ("start_grab_course_task 2")
+    if config.queue_mode:
+        grab_cours_queue_mode(config)
+    else:
+        grab_cours_normal_mode(config)
+    print ("start_grab_course_task 3")
+    stop_grab_course()
+
+def grab_cours_queue_mode(config: Config) -> None:
+    """
+    顺序抢课:
+    按照设置的顺序/优先级进行抢课
+    """
+    # 重复两遍以确认
+    for _ in range(2):
+        for course in config.courses:
+            while not grab_course(course, config.account.cookie):
+                time.sleep(config.delay)  # 延迟，防止请求过于频繁
+
+
+def grab_cours_normal_mode(config: Config) -> None:
+    """
+    标准模式:
+    正常循环抢课直至没有可抢的课
+    """
     finished = set[int]()  # 记录已成功抢到的课程ID
 
-    while task_running:
-        try:
-            # 解析抢课开始时间
-            start_time = datetime.strptime(config.start_time, "%Y-%m-%d %H:%M:%S")
-        except ValueError:
-            return jsonify({"error": "抢课开始时间格式不正确，应为 YYYY-MM-DD HH:MM:SS"}), 400
-        
-        current_time = datetime.now()
-        target_time = start_time - timedelta(seconds=config.offset)
-        
-        if current_time < target_time:
-            log_message(f"当前时间 {current_time.strftime('%Y-%m-%d %H:%M:%S')} 不在预设的抢课时间范围内")
-            time.sleep(0.1)
-            continue
+    for course in config.courses:
+        if len(finished) == len(config.courses):
+            stop_grab_course()
+            time.sleep(3)
+            log_message("抢课完成！")
 
-        for course in config.courses:
-            if len(finished) == len(config.courses):
-                stop_grab_course()
-                time.sleep(3)
-                log_message("抢课完成！")
+        if grab_course(course, config.account.cookie):
+            finished.add(course.kcrwdm)
 
-            if grab_course(course, config.account.cookie):
-                finished.add(course.kcrwdm)
-
-            time.sleep(config.delay)  # 延迟，防止请求过于频繁
+        time.sleep(config.delay)  # 延迟，防止请求过于频繁
 
 
 def start_grab_course_thread() -> None:
@@ -344,7 +380,7 @@ def index() -> Any:
         with open(log_file_path, "r", encoding="utf-8") as log_file:
             logs = log_file.readlines()[-100:]  # 读取最后100行日志
     return render_template(
-        "index.html", config=config, logs="".join(logs), available_courses=[], start_time=config.start_time, offset=config.offset
+        "index.html", config=config, logs="".join(logs), available_courses=[], start_time=config.start_time, offset=config.offset, queue_mode=config.queue_mode
     )
 
 
@@ -363,7 +399,7 @@ def update_config() -> Any:
     else:
         start_time = None
     offset = int(request.form.get("offset", 300))  # 获取偏移量，默认300秒
-
+    queue_mode = request.form.get("queue_mode", "false").lower() == "true"
     try:
         courses = []
         kcrwdm_list = request.form.getlist("kcrwdm")
@@ -395,8 +431,8 @@ def update_config() -> Any:
     if start_time:
         config.start_time = start_time
         config.offset = offset
+    config.queue_mode = queue_mode
     config.courses = courses
-
     save_config(config)
     log_message("配置已更新")
     return redirect(url_for("index"))

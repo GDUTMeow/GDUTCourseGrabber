@@ -4,7 +4,7 @@
 
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import IntEnum
 from typing import Iterable
 
@@ -113,7 +113,7 @@ class Grabber:
         if not self.config.start_at:
             return
 
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
 
         if now >= self.config.start_at:
             return

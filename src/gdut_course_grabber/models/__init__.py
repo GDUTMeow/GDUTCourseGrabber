@@ -2,10 +2,10 @@
 提供数据类型。
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import IntEnum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 class CourseSource(IntEnum):
@@ -144,13 +144,21 @@ class GrabberConfig(BaseModel):
 
     start_at: datetime | None = None
     """
-    抢课任务开始时间。
+    抢课任务开始时间 (UTC)。
     """
 
     retry: bool = True
     """
     是否在抢课失败后自动重试。
     """
+
+    @field_validator("start_at", mode="after")
+    @classmethod
+    def convert_start_at_to_utc(cls, value: datetime | None) -> datetime | None:
+        if value is None:
+            return None
+
+        return value.astimezone(timezone.utc)
 
 
 class GrabberTask(BaseModel):

@@ -1,0 +1,60 @@
+name: Build Application
+
+on:
+  push:
+    tags:
+      - "v*.*.*" # Trigger on version tags
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install PDM
+        run: pip install pdm
+
+      - name: Install dependencies
+        run: pdm install --prod
+
+      - name: Build for Windows
+        if: runner.os == 'Windows'
+        run: .\build.bat
+        shell: cmd
+
+      - name: Build for macOS/Linux
+        if: runner.os == 'macOS' || runner.os == 'Linux'
+        run: |
+          chmod +x build_unix.sh
+          ./build_unix.sh
+        shell: bash
+
+      - name: Upload Artifact - Linux
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v3
+        with:
+          name: GDUTCourseGrabber-${{ github.ref_name }}-Linux-${{ runner.arch }}
+          path: dist/*
+
+      - name: Upload Artifact - macOS
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v3
+        with:
+          name: GDUTCourseGrabber-${{ github.ref_name }}-macOS-${{ runner.arch }}
+          path: dist/*
+
+      - name: Upload Artifact - Windows
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v3
+        with:
+          name: GDUTCourseGrabber-${{ github.ref_name }}-Windows-${{ runner.arch }}
+          path: dist/*

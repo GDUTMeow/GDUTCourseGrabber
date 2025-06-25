@@ -62,7 +62,7 @@ def add_task(task: GrabberTask) -> ApiResponse[None]:
 
 
 @router.delete("/{id}")
-def destroy_task(id: int) -> ApiResponse[None]:
+async def destroy_task(id: int) -> ApiResponse[None]:
     """
     销毁抢课任务路由。
 
@@ -71,7 +71,7 @@ def destroy_task(id: int) -> ApiResponse[None]:
     """
 
     try:
-        grabber_task_manager.destroy_task(id)
+        await grabber_task_manager.destroy_task(id)
     except KeyError as ex:
         raise entity_not_found_error(id) from ex
 
@@ -127,7 +127,7 @@ def get_status(id: int) -> ApiResponse[GrabberStatus]:
 
 
 @router.get("/{id}/reset")
-def reset_task(id: int) -> ApiResponse[None]:
+async def reset_task(id: int) -> ApiResponse[None]:
     """
     重置抢课任务路由。
 
@@ -136,7 +136,7 @@ def reset_task(id: int) -> ApiResponse[None]:
     """
 
     try:
-        grabber_task_manager.reset_task(id)
+        await grabber_task_manager.reset_task(id)
     except KeyError as ex:
         raise entity_not_found_error(id) from ex
 
@@ -144,7 +144,7 @@ def reset_task(id: int) -> ApiResponse[None]:
 
 
 @router.put("/{id}")
-def update_task(id: int, task: GrabberTask) -> ApiResponse[None]:
+async def update_task(id: int, task: GrabberTask) -> ApiResponse[None]:
     """
     更新抢课任务路由。
 
@@ -154,7 +154,7 @@ def update_task(id: int, task: GrabberTask) -> ApiResponse[None]:
     """
 
     try:
-        grabber_task_manager.update_task(id, task)
+        await grabber_task_manager.update_task(id, task)
     except KeyError as ex:
         raise entity_not_found_error(id) from ex
 

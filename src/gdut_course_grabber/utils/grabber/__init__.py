@@ -98,7 +98,7 @@ class GrabberTaskManager:
 
         return Grabber(task.account, task.config, task.courses)
 
-    def update_task(self, id: int, task: GrabberTask) -> None:
+    async def update_task(self, id: int, task: GrabberTask) -> None:
         """
         更新抢课任务。
 
@@ -109,9 +109,10 @@ class GrabberTaskManager:
 
         self._grabbers[id].task = task
         self._save_tasks()
-        self.reset_task(id)
 
-    def destroy_task(self, id: int) -> None:
+        await self.reset_task(id)
+
+    async def destroy_task(self, id: int) -> None:
         """
         销毁抢课任务。
 
@@ -119,13 +120,15 @@ class GrabberTaskManager:
             id (int): 抢课任务 ID。
         """
 
+        await self._grabbers[id].conductor.cancel()
+
         del self._grabbers[id]
         self._save_tasks()
 
         if id == self._next_id - 1:
             self._next_id -= 1
 
-    def reset_task(self, id: int) -> None:
+    async def reset_task(self, id: int) -> None:
         """
         重置抢课任务。
 
@@ -134,6 +137,8 @@ class GrabberTaskManager:
         """
 
         entry = self._grabbers[id]
+        await entry.conductor.cancel()
+
         entry.conductor = self._create_grabber(entry.task)
 
     def add_task(self, task: GrabberTask) -> int:

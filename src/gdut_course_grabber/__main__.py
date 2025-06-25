@@ -17,6 +17,4 @@ app.mount("/api", api.app)
 app.mount("/", StaticFiles(directory=STATIC_PATH, html=True))
 
 if __name__ == "__main__":
-    if not os.path.exists("data"):
-        os.mkdir("data")
     uvicorn.run(app)

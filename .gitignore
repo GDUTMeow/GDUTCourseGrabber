@@ -170,9 +170,6 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-# User data
-data/
-
 # Old data
 config.json
 

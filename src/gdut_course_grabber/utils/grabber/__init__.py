@@ -34,7 +34,7 @@ class GrabberTaskManager:
     _grabbers: dict[int, GrabberEntry]
     _next_id: int
 
-    path: str
+    path: str | os.PathLike[str]
 
     @property
     def grabbers(self) -> MappingProxyType[int, GrabberEntry]:
@@ -44,7 +44,7 @@ class GrabberTaskManager:
 
         return MappingProxyType(self._grabbers)
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: str | os.PathLike[str]) -> None:
         """
         初始化 `GrabberTaskManager`。
 

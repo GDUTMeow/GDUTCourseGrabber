@@ -1,11 +1,6 @@
 @echo off
 chcp 65001
 
-:: 清理上次的构建
-echo Cleaning previous builds...
-rd /s /q build
-rd /s /q dist
-
 :: 运行打包工具
 echo Running PyInstaller...
 pdm run pyinstaller ^

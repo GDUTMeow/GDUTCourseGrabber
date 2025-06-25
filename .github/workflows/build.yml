@@ -24,18 +24,18 @@ jobs:
         run: pip install pdm
 
       - name: Install dependencies
-        run: pdm install --prod
+        run: pdm install
 
       - name: Build for Windows
         if: runner.os == 'Windows'
-        run: .\build.bat
+        run: .\scripts\pack.bat
         shell: cmd
 
       - name: Build for macOS/Linux
         if: runner.os == 'macOS' || runner.os == 'Linux'
         run: |
-          chmod +x build_unix.sh
-          ./build_unix.sh
+          chmod +x build.sh
+          ./build.sh
         shell: bash
 
       - name: Upload Artifact - Linux

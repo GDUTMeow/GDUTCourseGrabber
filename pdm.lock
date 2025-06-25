@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:8f10b6237038d5224efdff65464e02c310f042316c021166a2d0c8f2f647e192"
+content_hash = "sha256:83d0325bb866c1855a362ee91fd5d20967a38815ce14b339c014f56b69212cbb"
 
 [[metadata.targets]]
 requires_python = "==3.12.*"
@@ -441,7 +441,8 @@ files = [
 
 [[package]]
 name = "nuitka"
-version = "2.5.9"
+version = "2.8rc9"
+path = "C:/Users/GamerNoTitle/Downloads/Nuitka-factory.zip"
 summary = "Python compiler with full language support and CPython compatibility"
 groups = ["dev"]
 dependencies = [
@@ -449,7 +450,7 @@ dependencies = [
     "zstandard>=0.15",
 ]
 files = [
-    {file = "Nuitka-2.5.9.tar.gz", hash = "sha256:6cfb37449c9dd60bf6e9f79e420198019f44bb5154e3d6a40d3124d5cc26edf1"},
+    {file = "Nuitka-factory.zip", hash = "sha256:02a3e91db98392322ca74db88e9d7b2328398b3230f8aa26407b59a39d21f253"},
 ]
 
 [[package]]

@@ -5,8 +5,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/png" href="img/favicon.png">
+  <link rel="stylesheet" href="css/styles.css" />
   <title>GDUT 抢课助手 | GDUTCourseGrabber</title>
 </head>
 
@@ -19,7 +19,7 @@
         <s-navigation mode="rail" onchange="changePanel(this.selectedIndex)">
           <!--抽屉顶部-->
           <s-icon-button slot="start" type="filled-tonal">
-            <img src="favicon.png" alt="Logo" style="width: 40px; height: 40px;" />
+            <img src="img/favicon.png" alt="Logo" style="width: 40px; height: 40px;" />
           </s-icon-button>
           <s-navigation-item selected="true">
             <s-icon slot="icon">
@@ -283,11 +283,15 @@
                   <s-alert type="warning">任务说明：空闲/完成时，点击「启动」可以开始任务；等待开始/正在进行时，点击「停止」可以终止任务。</s-alert>
                 </div>
                 <div align="right" style="margin-bottom: 16px;">
-                  <s-text-field label="自动刷新间隔（秒）" value="3" style="margin-right: 8px;" id="task-table-auto-refresh-delay" type="number"></s-text-field>
-                  <s-button onclick="toggleAutoRefreshTaskTable()" type="filled-tonal" style="margin-right: 8px;">切换自动刷新</s-button>
+                  <s-text-field label="自动刷新间隔（秒）" value="3" style="margin-right: 8px;"
+                    id="task-table-auto-refresh-delay" type="number"></s-text-field>
+                  <s-button onclick="toggleAutoRefreshTaskTable()" type="filled-tonal"
+                    style="margin-right: 8px;"><s-circular-progress indeterminate="true"
+                      id="task-table-auto-refresh-animation" class="hidden"></s-circular-progress> 切换自动刷新 </s-button>
                   <s-button onclick="flushTaskTable()" type="outlined">刷新任务列表</s-button>
                 </div>
-                <s-linear-progress id="task-table-auto-refresh-indicator" class="hidden" style="margin-top: 8px; margin-bottom: 8px;" animated="true"></s-linear-progress>
+                <s-linear-progress id="task-table-auto-refresh-indicator" class="hidden"
+                  style="margin-top: 8px; margin-bottom: 8px;" animated="true"></s-linear-progress>
                 <s-table style="overflow: auto; display: block; text-align: center;">
                   <s-thead>
                     <s-tr>
@@ -328,10 +332,10 @@
         </div>
     </s-dialog>
   </s-page>
-  <script src="scripts.js"></script>
-  <script src="sober.min.js"></script>
-  <script src="theme.js"></script>
-  <script src="pangu.min.js"></script>
+  <script src="js/scripts.js"></script>
+  <script src="js/sober.min.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/pangu.min.js"></script>
   <script>
     //safari user-scalable=no
     document.addEventListener('gesturestart', (event) => event.preventDefault())

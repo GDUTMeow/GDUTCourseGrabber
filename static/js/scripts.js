@@ -953,7 +953,7 @@ async function startTask(taskId) {
 
 async function stopTask(taskId) {
     globalLoading.setAttribute('showed', 'true');
-    fetch(`/api/grabber/${taskId}/reset`, { method: 'GET' }).then(response => {
+    fetch(`/api/grabber/${taskId}/cancel`, { method: 'GET' }).then(response => {
         if (response.ok) {
             showDialog('成功', `任务 ${taskId} 已停止。`, 'success');
         } else {
@@ -1017,6 +1017,7 @@ function toggleAutoRefreshTaskTable() {
     const delayInput = document.getElementById('task-table-auto-refresh-delay');
     const delay = Number(delayInput.value);
     const refreshIndicator = document.getElementById('task-table-auto-refresh-indicator');
+    const loadingIndicator = document.getElementById('task-table-auto-refresh-animation');
 
     if (globalAutoRefreshTask) {
         clearInterval(globalAutoRefreshTask);
@@ -1028,6 +1029,7 @@ function toggleAutoRefreshTaskTable() {
         }
 
         refreshIndicator.classList.add('hidden');
+        loadingIndicator.classList.add('hidden');
         refreshIndicator.value = 0;
         currentIndicatorSteps = 0;
     } else {
@@ -1043,6 +1045,7 @@ function toggleAutoRefreshTaskTable() {
         }
 
         refreshIndicator.classList.remove('hidden');
+        loadingIndicator.classList.remove('hidden');
         refreshIndicator.max = 100;
         refreshIndicator.value = 0;
 

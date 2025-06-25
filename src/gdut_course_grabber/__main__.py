@@ -3,6 +3,7 @@ GDUTCourseGrabber 程序入口。
 """
 
 import os
+import webbrowser
 
 import uvicorn
 from fastapi import FastAPI
@@ -18,4 +19,5 @@ app.mount("/", StaticFiles(directory=STATIC_PATH, html=True))
 
 if __name__ == "__main__":
     os.makedirs(PLATFORM_DIRS.user_data_dir, exist_ok=True)
+    webbrowser.open("http://127.0.0.1:8000")
     uvicorn.run(app)

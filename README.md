@@ -1,6 +1,9 @@
-# GDUTCourseGrabber
 
-
+<div align="center">
+<img src="https://cdn.jsdelivr.net/gh/GDUTMeow/GDUTCourseGrabber@vv3/static/img/favicon.png" height="100px">
+<br>
+    <b>GDUTCourseGrabber<b>
+</div>
 
 ## 快速上手
 
@@ -66,6 +69,6 @@
 
 ## Credit
 
-https://github.com/FoyonaCZY/GDUT_GrabCourse
+<https://github.com/FoyonaCZY/GDUT_GrabCourse>
 
-https://tieba.baidu.com/p/9023794849
+<https://tieba.baidu.com/p/9023794849>

@@ -27,10 +27,6 @@ pdm run pyinstaller ^
     --i "static/favicon.ico" ^
     -F src/gdut_course_grabber/__main__.py
 
-:: 将 static 文件夹复制到 dist 目录下
-echo Copying static files...
-echo "D\n" | xcopy /y /e /i static dist\static
-
 :: 清理 PyInstaller 的临时文件
 echo Cleaning up PyInstaller temporary files...
 rd /s /q build

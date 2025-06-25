@@ -50,7 +50,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: GDUTCourseGrabber-${{ github.ref_name }}-macOS-${{ runner.arch }}
-          path: dist/*
+          path: dist/GDUTCourseGrabber_App/*
 
       - name: Upload Artifact - Windows
         if: runner.os == 'Windows'

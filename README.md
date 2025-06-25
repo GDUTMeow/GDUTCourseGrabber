@@ -1,8 +1,8 @@
 
 <div align="center">
-<img src="https://cdn.jsdelivr.net/gh/GDUTMeow/GDUTCourseGrabber@vv3/static/img/favicon.png" height="100px">
+<img src="https://cdn.jsdelivr.net/gh/GDUTMeow/GDUTCourseGrabber@vv3/static/img/favicon.png" height="200px">
 <br>
-    <b>GDUTCourseGrabber<b>
+    <h1>GDUTCourseGrabber</h1>
 </div>
 
 ## 快速上手

@@ -32,12 +32,6 @@ pdm run pyinstaller \
     --onefile \
     src/gdut_course_grabber/__main__.py
 
-echo "Copying static files..."
-mkdir -p "dist/GDUTCourseGrabber_App/static"
-cp -R static/* "dist/GDUTCourseGrabber_App/static/"
-mv "dist/GDUTCourseGrabber" "dist/GDUTCourseGrabber_App/"
-
-
 echo "Cleaning up PyInstaller temporary files..."
 rm -rf build/
 

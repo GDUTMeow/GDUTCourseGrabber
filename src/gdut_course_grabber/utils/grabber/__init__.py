@@ -125,9 +125,6 @@ class GrabberTaskManager:
         del self._grabbers[id]
         self._save_tasks()
 
-        if id == self._next_id - 1:
-            self._next_id -= 1
-
     async def reset_task(self, id: int) -> None:
         """
         重置抢课任务。

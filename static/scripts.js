@@ -88,6 +88,10 @@ function addCourseEntry() {
         <input type="text" name="teacher" placeholder="老师名字" required>
         <input type="text" name="remark" placeholder="备注">
         <input type="hidden" name="preset" value="false">
+        <div class="conflix-popup-group">
+            <button type="button" class="btn conflix-popup-btn" onclick="showConflixDialog(this, '')">选择冲突课程</button>
+            <input type="hidden" name="conflix" value="">
+        </div>
         <button type="button" class="btn remove-course" onclick="this.parentElement.remove()">-</button>
     `;
     document.getElementById("courses-container").appendChild(courseEntry);
@@ -223,7 +227,7 @@ function addCourseToSelectedList(course) {
     const coursesContainer = document.getElementById("courses-container");
 
     // 检查课程是否已经存在
-    const existingCourse = coursesContainer.querySelector(`input[name="kcrwdm"][value="${course.kcrwdm}"]`);
+    const existingCourse = coursesContainer.querySelector(`input[name=\"kcrwdm\"][value=\"${course.kcrwdm}\"]`);
     if (existingCourse) {
         showDialog('错误', '该课程已添加到已选课程列表。');
         return;
@@ -238,7 +242,11 @@ function addCourseToSelectedList(course) {
     <input type="text" name="teacher" placeholder="老师名字" value="${course.teacher}" readonly>
     <input type="text" name="remark" placeholder="备注" value="${course.remark}">
     <input type="hidden" name="preset" value="${course.preset}">
-    <button type="button" class="btn ${course.preset ? 'save-remark' : 'remove-course'}" onclick="${course.preset ? `saveRemark(${course.kcrwdm})` : `this.parentElement.remove(); checkCoursesCount();`}">${course.preset ? '保存备注' : '-'}</button>
+    ${course.preset ? `<button type='button' class='btn save-remark' onclick='saveRemark(${course.kcrwdm})'>保存备注</button>` : ''}
+    <div class="conflix-popup-group">
+        <button type="button" class="btn conflix-popup-btn" onclick="showConflixDialog(this, '${course.kcrwdm}')">选择冲突课程</button>
+        <input type="hidden" name="conflix" value="${course.conflix ? course.conflix : ''}">
+    </div>
     <button type="button" class="btn remove-course" onclick="this.parentElement.remove()">-</button>
     `;
     coursesContainer.appendChild(courseEntry);

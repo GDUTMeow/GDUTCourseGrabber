@@ -270,6 +270,8 @@ def grab_course(course: Course, cookie: str) -> int:
         log_message(
             f"抢课请求发送，课程ID: {course.kcrwdm}, 名称: {course.kcmc}, 老师: {course.teacher}, 响应: {response.text}"
         )
+        if "上课时间有冲突" in response.text:
+            return 0
         if "当前不是选课时间" in response.text:
             return -1
         if "您已经选了该门课程" in response.text:
@@ -441,7 +443,10 @@ def update_config() -> Any:
         for kcrwdm, kcmc, teacher, preset, remark, conflix in zip(
             kcrwdm_list, kcmc_list, teacher_list, preset_list, remark_list, conflix_list
         ):
-            conflix = set(map(int, conflix.split(",")))
+            try:
+                conflix = set[int](map(int, conflix.split(",")))
+            except:
+                conflix = set[int]()
             kcrwdm = int(kcrwdm)
             preset = preset.lower() == "true"
             courses.append(

@@ -39,7 +39,7 @@ var gdutmoe_triggered = false;
 
 function toggleSidebar() {
     const menuBtn = document.getElementById('menu-btn');
-    const faviconImgHtml = '<img src="favicon.png" height="32px" width="32px">';
+    const faviconImgHtml = '<img src="img/GDUTMoe.png" height="32px" width="32px">';
     const leftArrowSvg = `
     <svg viewBox="0 -960 960 960" aria-hidden="true" focusable="false">
         <path d="M640-80 240-480l400-400 71 71-329 329 329 329-71 71Z"></path>

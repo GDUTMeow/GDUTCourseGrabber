@@ -395,36 +395,40 @@ function addLineToCourseTable(name, id, teacher, category, chosen, limit, source
 
     if (isNaN(numLimit) || isNaN(numSelected) || numLimit === 0 || limit === "?" || chosen === "?") {
         limit_linear.setAttribute('value', '0');
-        limit_td.innerText = `${chosen || '?'}/${limit || '?'}`;
+        limit_td.innerText = `${chosen || '?'}/${limit || '?'} (?%)`;
     } else {
         limit_linear.setAttribute('value', String((numSelected / numLimit) * 100));
-        limit_td.innerText = `${numSelected}/${numLimit}`;
+        limit_td.innerText = `${numSelected}/${numLimit} (${(numSelected / numLimit * 100).toFixed(2)}%)`;
+        if (numSelected >= numLimit) {
+            limit_td.style.color = 'var(--s-color-error)';
+            limit_td.style.fontWeight = 'bold';
+        }
+        limit_td.appendChild(limit_linear);
+
+        operation_td.appendChild(add_btn);
+        operation_td.appendChild(detail_btn);
+
+        const name_td = document.createElement('s-td');
+        const formattedCourseName = processCourseName(name);
+        name_td.innerHTML = `${formattedCourseName} (${id})`;
+        name_td.style.alignContent = "center";
+        table_line.appendChild(name_td);
+
+        const teacher_td = document.createElement('s-td');
+        teacher_td.innerText = teacher;
+        teacher_td.style.alignContent = "center";
+        table_line.appendChild(teacher_td);
+
+        const category_td = document.createElement('s-td');
+        category_td.innerText = category;
+        category_td.style.alignContent = "center";
+        table_line.appendChild(category_td);
+
+        table_line.appendChild(limit_td);
+        table_line.appendChild(operation_td);
+
+        table_body.appendChild(table_line);
     }
-    limit_td.appendChild(limit_linear);
-
-    operation_td.appendChild(add_btn);
-    operation_td.appendChild(detail_btn);
-
-    const name_td = document.createElement('s-td');
-    const formattedCourseName = processCourseName(name);
-    name_td.innerHTML = `${formattedCourseName} (${id})`;
-    name_td.style.alignContent = "center";
-    table_line.appendChild(name_td);
-
-    const teacher_td = document.createElement('s-td');
-    teacher_td.innerText = teacher;
-    teacher_td.style.alignContent = "center";
-    table_line.appendChild(teacher_td);
-
-    const category_td = document.createElement('s-td');
-    category_td.innerText = category;
-    category_td.style.alignContent = "center";
-    table_line.appendChild(category_td);
-
-    table_line.appendChild(limit_td);
-    table_line.appendChild(operation_td);
-
-    table_body.appendChild(table_line);
 }
 
 function formatWeeksArrayToDisplayString(weeks) {

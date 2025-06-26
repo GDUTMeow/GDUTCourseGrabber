@@ -38,23 +38,58 @@ jobs:
   build_app:
     needs: determine_version
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest, ubuntu-24.04-arm, windows-11-arm, macos-13]
+        include:
+          - name: Linux x86_64 (GNU)
+            os: ubuntu-latest
+            cpython_triple: x86_64-unknown-linux-gnu
+            artifact_suffix: Linux-x64-gnu
+          - name: Linux aarch64 (GNU)
+            os: ubuntu-latest-arm64
+            cpython_triple: aarch64-unknown-linux-gnu
+            artifact_suffix: Linux-arm64-gnu
+
+          # pyinstaller does not support MUSL builds on Linux
+          # - name: Linux x86_64 (MUSL)
+          #   os: ubuntu-latest # x86_64
+          #   cpython_triple: x86_64-unknown-linux-musl
+          #   artifact_suffix: Linux-x64-musl
+          # - name: Linux aarch64 (MUSL)
+          #   os: ubuntu-latest-arm64
+          #   cpython_triple: aarch64-unknown-linux-musl
+          #   artifact_suffix: Linux-arm64-musl
+          
+          # macOS
+          - name: macOS x86_64
+            os: macos-13
+            cpython_triple: x86_64-apple-darwin
+            artifact_suffix: macOS-x64
+          - name: macOS aarch64
+            os: macos-14
+            cpython_triple: aarch64-apple-darwin
+            artifact_suffix: macOS-arm64
+          - name: Windows x86_64
+            os: windows-latest # x86_64
+            artifact_suffix: Windows-x64
+          - name: Windows aarch64
+            os: windows-latest-arm64
+            artifact_suffix: Windows-arm64
+
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Python
+      - name: Set up Python (for PDM itself, not the bundled one)
+        if: runner.os != 'Windows'
         uses: actions/setup-python@v4
         with:
           python-version: "3.12"
 
       - name: Install PDM
+        if: runner.os != 'Windows'
         run: pip install pdm
-
-      - name: Install dependencies
-        run: pdm install --no-self
 
       - name: Build for Windows
         if: runner.os == 'Windows'
@@ -63,28 +98,20 @@ jobs:
 
       - name: Build for macOS/Linux
         if: runner.os == 'macOS' || runner.os == 'Linux'
+        env:
+          CPYTHON_TRIPLE: ${{ matrix.cpython_triple }}
         run: |
+          if [[ "$CPYTHON_TRIPLE" == *"musl"* ]]; then
+            sudo apt-get update
+            sudo apt-get install -y musl-dev
+          fi
+          echo "Building with CPYTHON_TRIPLE=${CPYTHON_TRIPLE}"
           chmod +x ./scripts/pack.sh
           ./scripts/pack.sh
         shell: bash
 
-      - name: Upload Artifact - Linux
-        if: runner.os == 'Linux'
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: GDUTCourseGrabber-${{ needs.determine_version.outputs.app_version }}-Linux-${{ runner.arch }}
-          path: dist/*
-
-      - name: Upload Artifact - macOS
-        if: runner.os == 'macOS'
-        uses: actions/upload-artifact@v4
-        with:
-          name: GDUTCourseGrabber-${{ needs.determine_version.outputs.app_version }}-macOS-${{ runner.arch }}
-          path: dist/*
-
-      - name: Upload Artifact - Windows
-        if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
-        with:
-          name: GDUTCourseGrabber-${{ needs.determine_version.outputs.app_version }}-Windows-${{ runner.arch }}
+          name: GDUTCourseGrabber-${{ needs.determine_version.outputs.app_version }}-${{ matrix.artifact_suffix }}
           path: dist/*

@@ -235,7 +235,9 @@
                       id="save-config-btn-loading"></s-circular-progress>
                     保存并登录 </s-button>
                 </div>
-                <p>使用文档：<a href="https://github.com/GDUTMeow/GDUTCourseGrabber/tree/v3">https://github.com/GDUTMeow/GDUTCourseGrabber/tree/v3</a></p>
+                <p>使用文档：<a
+                    href="https://github.com/GDUTMeow/GDUTCourseGrabber/tree/v3">https://github.com/GDUTMeow/GDUTCourseGrabber/tree/v3</a>
+                </p>
                 <s-divider></s-divider>
                 <div align="center" style="margin-bottom: 16px;">
                   <p>当前已加载了 <span id="current-page">0</span> 页，已加载 <span id="current-count">0</span> 条</p>
@@ -250,6 +252,13 @@
                   <s-button id="custom-page-size-btn"
                     onclick="onChangePageSize(document.getElementById('custom-page-size-input').value, true)"
                     style="margin-left: 8px;" class="hidden">确定</s-button>
+                </div>
+                <div align="center">
+                  <s-text-field id="search-course-input" label="在已加载的课程中搜索课程名称/课程ID/教师名字/课程类别"
+                    style="max-width: 88%; width: 100%;"></s-text-field>
+                  <s-button style="margin-left: 8px; width: 100%; max-width: 10%"
+                    onclick="searchCourses()"><s-circular-progress indeterminate="true" id="search-btn-indicator"
+                      class="hidden"></s-circular-progress> 搜索</s-button>
                 </div>
                 <s-table style="overflow: auto; display: block; text-align: center;">
                   <s-thead>

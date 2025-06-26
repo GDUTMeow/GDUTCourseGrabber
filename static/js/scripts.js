@@ -7,6 +7,7 @@ globalCurrentCount = document.getElementById('current-count');
 globalPageSize = 20;
 globalLoggedIn = false;
 globalCourses = [];
+globalLoadedCourses = [];
 
 globalAutoRefreshTask = false; // 是否自动刷新任务列表
 globalIndicatorInterval = null; // 用于存储自动刷新任务的定时器
@@ -85,17 +86,16 @@ function openGDUTJW() {
     window.open('https://jxfw.gdut.edu.cn/login!welcome.action', '_blank');
 }
 
-function changeAccentColor(color = null) {
+async function changeAccentColor(color = null) {
     if (!color) {
-        const accentColor = localStorage.getItem('accentColor')
-        if (!accentColor) {
-            return
+        const accentColor = await getData('accentColor');
+        if (accentColor) {
+            const colorPicker = document.querySelector('#color-picker');
+            colorPicker.value = accentColor;
+            sober.theme.createScheme(accentColor, { page: document.querySelector('s-page') });
         }
-        const colorPicker = document.querySelector('#color-picker');
-        colorPicker.value = accentColor;
-        sober.theme.createScheme(accentColor, { page: document.querySelector('s-page') });
     } else {
-        localStorage.setItem('accentColor', color);
+        saveData('accentColor', color);
         sober.theme.createScheme(color, { page: document.querySelector('s-page') });
     }
 }
@@ -141,20 +141,18 @@ function changePanel(panelId) {
     }
 }
 
-function saveCoursesToLocalStorage() {
-    localStorage.setItem('selectedCourses', JSON.stringify(globalCourses));
-}
-
-function initialize() {
+async function initialize() {
     const cookieField = document.getElementById('cookie');
     const taskSessionIdField = document.getElementById('task-sessionid')
-    if (localStorage.getItem('cookie')) {
-        cookieField.value = localStorage.getItem('cookie');
-        taskSessionIdField.value = localStorage.getItem('cookie'); // 同步初始值
+    const status = document.getElementById('status');
+    status.innerText = '🔴 未登录';
+    if (await getData('userSessionId')) {
+        cookieField.value = await getData('userSessionId');
+        taskSessionIdField.value = await getData('userSessionId'); // 同步初始值
         saveAndLogin(false);
     }
 
-    const storedCourses = localStorage.getItem('selectedCourses');
+    const storedCourses = await getData('userSelectedCourses');
     if (storedCourses) {
         try {
             const parsedCourses = JSON.parse(storedCourses);
@@ -200,7 +198,7 @@ function login(cookie, positive = true) {
             if (response.ok) {
                 return response.json().then(jsonResponse => {
                     globalLoggedIn = true;
-                    localStorage.setItem('cookie', cookie);
+                    saveData('userSessionId', cookie);
                     if (positive) {
                         showToast('登录成功！', 'success');
                     }
@@ -248,6 +246,7 @@ function flushCoursesTable() {
     globalCurrentPage.innerText = '0';
     globalCurrentCount.innerText = '0';
     displayedCourseIdsInTable.clear();
+    globalLoadedCourses = []; // 清空已加载课程列表
     loadMoreCourses();
 }
 
@@ -266,15 +265,15 @@ function onCustomPageSizeChecked() {
     document.getElementById('custom-page-size-btn').classList.remove('hidden');
 }
 
-function fetchNewCourses(page = 1, size = 20, positive = true) {
+async function fetchNewCourses(page = 1, size = 20, positive = true) {
     globalLoading.setAttribute('showed', 'true');
 
-    if (!globalLoggedIn || !localStorage.getItem('cookie')) {
+    if (!globalLoggedIn || await getData('userSessionId') == null) {
         showToast('请先登录后再进行操作', 'error');
         globalLoading.setAttribute('showed', 'false');
         return Promise.resolve(false);
     }
-    const cookie = localStorage.getItem('cookie');
+    const cookie = await getData('userSessionId');
 
     return fetch(`/api/eas/courses?count=${size}&page=${page}&session_id=${cookie}`, {
         method: 'GET',
@@ -339,6 +338,7 @@ function loadMoreCourses() {
                             );
                             displayedCourseIdsInTable.add(courseIdStr);
                             newCoursesAddedCount++;
+                            globalLoadedCourses.push(course);
                         }
                     } else {
                         console.warn("Encountered a course with missing ID or invalid course object:", course);
@@ -452,14 +452,14 @@ function formatWeeksArrayToDisplayString(weeks) {
     return weekStr || "未知";
 }
 
-function fetchCourseDetail(classId, positive = true) {
-    if (!globalLoggedIn || !localStorage.getItem('cookie')) {
+async function fetchCourseDetail(classId, positive = true) {
+    if (!globalLoggedIn || !await getData('userSessionId')) {
         showToast('请先登录后再进行操作', 'error');
         return Promise.resolve(false);
     }
     globalLoading.setAttribute('showed', 'true');
 
-    return fetch("/api/eas/courses/" + classId + "/lessons?session_id=" + localStorage.getItem('cookie'), {
+    return fetch("/api/eas/courses/" + classId + "/lessons?session_id=" + await getData('userSessionId'), {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -561,8 +561,8 @@ function showCourseDetail(classId) {
     fetchCourseDetail(classId, true);
 }
 
-function addCourse(classId, courseRawData) {
-    if (!globalLoggedIn || !localStorage.getItem('cookie')) {
+async function addCourse(classId, courseRawData) {
+    if (!globalLoggedIn || !await getData('userSessionId')) {
         showToast('请先登录后再进行操作', 'error');
         return;
     }
@@ -609,7 +609,7 @@ function addCourse(classId, courseRawData) {
             };
 
             globalCourses.push(courseToAdd);
-            saveCoursesToLocalStorage();
+            saveData('userSelectedCourses', globalCourses);
             showToast(`课程 「${courseToAdd.name} (${classIdStr})」 已添加到列表。`, 'success');
             if (document.getElementById('operation-panel').classList.contains('hidden') === false) {
                 initializeSelectedCourseTable();
@@ -629,7 +629,7 @@ function removeCourse(classId) {
     globalCourses = globalCourses.filter(course => String(course.id) !== classIdStr);
 
     if (globalCourses.length < originalLength) {
-        saveCoursesToLocalStorage();
+        saveData('userSelectedCourses', globalCourses);
         showToast(`课程 「${courseToRemove ? courseToRemove.name : ''} (${classIdStr})」 已从列表中移除。`, 'success');
         initializeSelectedCourseTable();
     } else {
@@ -733,12 +733,12 @@ function initializeSelectedCourseTable() {
 }
 
 
-function addTask() {
+async function addTask() {
     if (globalCourses.length === 0) {
         showToast('课程列表为空，请先添加课程。', 'error');
         return;
     }
-    if (!globalLoggedIn || !localStorage.getItem('cookie')) {
+    if (!globalLoggedIn || !await getData('userSessionId')) {
         showToast('请先登录后再进行操作', 'error');
         return;
     }
@@ -747,7 +747,7 @@ function addTask() {
         showToast('任务开始时间格式不正确，请按照 YYYY-MM-DD HH:mm:SS 的格式填写，例如 2025-09-01 12:00:00', 'error');
         return;
     }
-    const cookie = localStorage.getItem('cookie');
+    const cookie = await getData('userSessionId');
 
     const coursesForPayload = globalCourses.map(course => {
         return {
@@ -980,7 +980,6 @@ async function stopTask(taskId) {
     });
 }
 
-
 function syncSessionId() {
     const cookieField = document.getElementById('cookie');
     const sessionId = cookieField.value.trim();
@@ -1099,7 +1098,7 @@ function moveCourseUpInList(courseId) {
         [window.globalCourses[index - 1], window.globalCourses[index]] = [window.globalCourses[index], window.globalCourses[index - 1]];
 
         try {
-            localStorage.setItem('selectedCourses', JSON.stringify(window.globalCourses));
+            saveData('userSelectedCourses', window.globalCourses);
         } catch (e) {
             console.error("Error saving selected courses to localStorage:", e);
         }
@@ -1125,7 +1124,7 @@ function pinCourseToTopInList(courseId) {
         window.globalCourses.unshift(courseToPin);
 
         try {
-            localStorage.setItem('selectedCourses', JSON.stringify(window.globalCourses));
+            saveData('userSelectedCourses', window.globalCourses);
         } catch (e) {
             console.error("Error saving selected courses to localStorage:", e);
         }
@@ -1172,6 +1171,97 @@ function showToast(message, type = 'info') {
             stopOnFocus: true,
         }
     ).showToast();
+}
+
+function saveData(key, value) {
+    fetch(`/api/storage/${key}`, {
+        method: 'PUT',
+        body: typeof value === 'object' ? JSON.stringify(value) : String(value),
+    }).then(response => {
+        if (response.ok) {
+            return true;
+        } else {
+            showToast(`保存数据失败: ${response.statusText}`, 'error');
+            return false;
+        }
+    }).catch(error => {
+        console.error(`保存数据失败: ${error.message}`);
+        showToast(`保存数据失败: ${error.message}`, 'error');
+        return false;
+    })
+}
+
+function getData(key) {
+    return fetch(`/api/storage/${key}`)
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`获取数据 ${key} 失败: ${response.status} ${response.statusText}${text ? ` - ${text.substring(0, 100)}...` : ''}`);
+                });
+            }
+            return response.json();
+        })
+        .then(jsonData => {
+            if (jsonData && jsonData.hasOwnProperty('data')) {
+                return jsonData.data;
+            } else {
+                return null;
+            }
+        })
+        .catch(error => {
+            console.error(`获取数据 ${key} 失败:`, error);
+            return null;
+        });
+}
+
+function searchCourses() {
+    const searchInput = document.getElementById('search-course-input');
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    const courseTableBody = document.getElementById('content-table-body');
+    const indicator = document.getElementById('search-btn-indicator');
+    courseTableBody.innerHTML = ''; // 清空现有内容
+    indicator.classList.remove('hidden');
+    if (searchTerm === "") {
+        populateCourseTable(globalLoadedCourses);
+        indicator.classList.add('hidden');
+        return;
+    }
+
+    const filteredCourses = globalLoadedCourses.filter(course => {
+        const courseName = String(course.name || '').toLowerCase();
+        const courseId = String(course.id || '');
+        const courseTeacher = String(course.teacher || '').toLowerCase();
+        const courseCategory = String(course.category || '').toLowerCase();
+
+        return courseName.includes(searchTerm) ||
+            courseId.includes(searchTerm) ||
+            courseTeacher.includes(searchTerm) ||
+            courseCategory.includes(searchTerm);
+    });
+
+    if (filteredCourses.length > 0) {
+        populateCourseTable(filteredCourses);
+        indicator.classList.add('hidden');
+    } else {
+        showToast('未找到匹配的课程', 'info');
+        indicator.classList.add('hidden');
+    }
+}
+
+
+function populateCourseTable(coursesToDisplay) {
+    coursesToDisplay.forEach(course => {
+        addLineToCourseTable(
+            decodeHtmlEntities(course.name),
+            course.id,
+            course.teacher,
+            course.category,
+            course.chosen,
+            course.limit,
+            course.source,
+            course.note
+        );
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {

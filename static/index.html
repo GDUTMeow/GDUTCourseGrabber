@@ -345,7 +345,7 @@
                   <s-button onclick="toggleAutoRefreshTaskTable()" type="filled-tonal"
                     style="margin-right: 8px;"><s-circular-progress indeterminate="true"
                       id="task-table-auto-refresh-animation" class="hidden"></s-circular-progress> 切换自动刷新 </s-button>
-                  <s-button onclick="flushTaskTable()" type="outlined">刷新任务列表</s-button>
+                  <s-button onclick="flushTaskTable()" type="outlined" id="flush-task-table-btn"><s-circular-progress indeterminate="true" id="flush-task-table-indicator" class="hidden"></s-circular-progress> 刷新任务列表 </s-button>
                 </div>
                 <s-linear-progress id="task-table-auto-refresh-indicator" class="hidden"
                   style="margin-top: 8px; margin-bottom: 8px;" animated="true"></s-linear-progress>

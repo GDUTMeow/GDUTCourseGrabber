@@ -849,14 +849,23 @@ async function getTaskStatus(taskId) {
 }
 
 async function flushTaskTable() {
+    const flushTaskTableBtn = document.getElementById('flush-task-table-btn');
+    const flushTaskTableIndicator = document.getElementById('flush-task-table-indicator');
+    flushTaskTableBtn.setAttribute('disabled', 'true');
+    flushTaskTableIndicator.classList.remove('hidden');
+
     const tasksData = await getTasks();
     const table_body = document.getElementById('task-table-body');
     const empty_message = document.getElementById('task-empty-tip');
+
+
     table_body.innerHTML = '';
 
     if (!tasksData || !tasksData.data || tasksData.data.length === 0) {
         if (empty_message) empty_message.classList.remove('hidden');
         showToast('没有找到抢课任务哦', 'info');
+        flushTaskTableBtn.removeAttribute('disabled');
+        flushTaskTableIndicator.classList.add('hidden');
         return;
     }
     if (empty_message) empty_message.classList.add('hidden');
@@ -953,6 +962,8 @@ async function flushTaskTable() {
         table_body.appendChild(table_line);
     }
     globalLoading.setAttribute('showed', 'false');
+    flushTaskTableBtn.removeAttribute('disabled');
+    flushTaskTableIndicator.classList.add('hidden');
 }
 
 

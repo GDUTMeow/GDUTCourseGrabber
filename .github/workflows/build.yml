@@ -1,19 +1,49 @@
 name: Build Application
 
 on:
-  push:
-    tags:
-      - "v*.*.*" # Trigger on version tags
-  workflow_dispatch: # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      version_override:
+        description: "构建版本号（例如 v3.0.0），如果不提供则使用 Git SHA 的前 7 位"
+        required: false
+        default: ""
+        type: string
 
 jobs:
-  build:
+  determine_version:
+    runs-on: ubuntu-latest
+    outputs:
+      app_version: ${{ steps.version_info.outputs.app_version }}
+    steps:
+      - name: Checkout code (to get SHA)
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Determine Version
+        id: version_info
+        run: |
+          VERSION_INPUT="${{ github.event.inputs.version_override }}"
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+
+          if [ -n "$VERSION_INPUT" ]; then
+            APP_VERSION="$VERSION_INPUT"
+          else
+            APP_VERSION="$SHORT_SHA"
+          fi
+
+          echo "Determined App Version: $APP_VERSION"
+          echo "app_version=$APP_VERSION" >> $GITHUB_OUTPUT # 设置 Job 输出
+
+  build_app:
+    needs: determine_version
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest, ubuntu-24.04-arm, windows-11-arm, macos-13]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -24,7 +54,7 @@ jobs:
         run: pip install pdm
 
       - name: Install dependencies
-        run: pdm install
+        run: pdm install --no-self
 
       - name: Build for Windows
         if: runner.os == 'Windows'
@@ -34,27 +64,27 @@ jobs:
       - name: Build for macOS/Linux
         if: runner.os == 'macOS' || runner.os == 'Linux'
         run: |
-          chmod +x build.sh
-          ./build.sh
+          chmod +x ./scripts/pack.sh
+          ./scripts/pack.sh
         shell: bash
 
       - name: Upload Artifact - Linux
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v4
         with:
-          name: GDUTCourseGrabber-${{ github.ref_name }}-Linux-${{ runner.arch }}
-          path: dist/GDUTCourseGrabber_App/*
+          name: GDUTCourseGrabber-${{ needs.determine_version.outputs.app_version }}-Linux-${{ runner.arch }}
+          path: dist/*
 
       - name: Upload Artifact - macOS
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v4
         with:
-          name: GDUTCourseGrabber-${{ github.ref_name }}-macOS-${{ runner.arch }}
-          path: dist/GDUTCourseGrabber_App/*
+          name: GDUTCourseGrabber-${{ needs.determine_version.outputs.app_version }}-macOS-${{ runner.arch }}
+          path: dist/*
 
       - name: Upload Artifact - Windows
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
         with:
-          name: GDUTCourseGrabber-${{ github.ref_name }}-Windows-${{ runner.arch }}
+          name: GDUTCourseGrabber-${{ needs.determine_version.outputs.app_version }}-Windows-${{ runner.arch }}
           path: dist/*

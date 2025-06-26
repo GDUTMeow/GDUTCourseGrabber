@@ -178,7 +178,8 @@ function saveAndLogin(positive = true) {
         showToast('请先输入 JSESSIONID 再进行登录！', 'error');
         return;
     }
-    login(cookieField.value, positive);
+    const cookie = cookieField.value.replace("JSESSIONID=", "").trim();
+    login(cookie, positive);
     syncSessionId(); // 登录后同步一次
 }
 
@@ -931,7 +932,7 @@ async function flushTaskTable() {
 
         const delay_td = document.createElement('s-td');
         delay_td.style.alignContent = 'center';
-        delay_td.innerText = delay.replace('PT', '').replace('S', ' 秒');
+        delay_td.innerText = delay.saveAndLogin('PT', '').replace('S', ' 秒');
         table_line.appendChild(delay_td);
 
         const retry_td = document.createElement('s-td');

@@ -33,7 +33,7 @@ jobs:
           fi
 
           echo "Determined App Version: $APP_VERSION"
-          echo "app_version=$APP_VERSION" >> $GITHUB_OUTPUT # 设置 Job 输出
+          echo "app_version=$APP_VERSION" >> $GITHUB_OUTPUT
 
   build_app:
     needs: determine_version

@@ -177,7 +177,7 @@ function initialize() {
 function saveAndLogin(positive = true) {
     const cookieField = document.getElementById('cookie');
     if (!cookieField.value) {
-        showDialog('错误', '请先输入 JSESSIONID 再进行登录', 'error');
+        showToast('请先输入 JSESSIONID 再进行登录！', 'error');
         return;
     }
     login(cookieField.value, positive);
@@ -202,7 +202,7 @@ function login(cookie, positive = true) {
                     globalLoggedIn = true;
                     localStorage.setItem('cookie', cookie);
                     if (positive) {
-                        showDialog('成功', '登录成功！', 'success');
+                        showToast('登录成功！', 'success');
                     }
                     document.getElementById('content-no-content-tip').classList.add('hidden');
                     document.getElementById('status').innerText = '🟢 已登录';
@@ -217,7 +217,7 @@ function login(cookie, positive = true) {
                     const errorMessage = errorData.message || `服务器返回错误状态码: ${response.status}.`;
                     document.getElementById('status').innerText = '🔴 登录出错，请尝试更新 JSESSIONID';
                     if (positive) {
-                        showDialog('错误', `登录失败：${errorMessage}`, 'error');
+                        showToast(`登录失败：${errorMessage}`, 'error');
                     }
                     return false;
                 }).catch(() => {
@@ -270,7 +270,7 @@ function fetchNewCourses(page = 1, size = 20, positive = true) {
     globalLoading.setAttribute('showed', 'true');
 
     if (!globalLoggedIn || !localStorage.getItem('cookie')) {
-        showDialog('错误', '请先登录后再进行操作', 'error');
+        showToast('请先登录后再进行操作', 'error');
         globalLoading.setAttribute('showed', 'false');
         return Promise.resolve(false);
     }
@@ -349,7 +349,7 @@ function loadMoreCourses() {
                     globalCurrentPage.innerText = newPage.toString();
                     globalCurrentCount.innerText = (Number(globalCurrentCount.innerText) + newCoursesAddedCount).toString();
                 } else if (newPage > 1) {
-                    showDialog('提示', '课程列表已经加载完啦，下面已经没有更多课程了', 'info');
+                    showToast('没有更多新的课程了，已经加载完所有课程。', 'info');
                 }
             } else if (coursesData === false) {
             } else {
@@ -454,7 +454,7 @@ function formatWeeksArrayToDisplayString(weeks) {
 
 function fetchCourseDetail(classId, positive = true) {
     if (!globalLoggedIn || !localStorage.getItem('cookie')) {
-        showDialog('错误', '请先登录后再进行操作', 'error');
+        showToast('请先登录后再进行操作', 'error');
         return Promise.resolve(false);
     }
     globalLoading.setAttribute('showed', 'true');
@@ -548,7 +548,7 @@ function fetchCourseDetail(classId, positive = true) {
         .catch(error => {
             console.error(`获取课程 ${classId} 详情失败:`, error);
             if (positive) {
-                showDialog('错误', `获取课程详情失败，请稍后重试或查看控制台\n${error.message || error}`, 'error');
+                showToast(`获取课程详情失败: ${error.message || error}`, 'error');
             }
             return false;
         })
@@ -563,14 +563,14 @@ function showCourseDetail(classId) {
 
 function addCourse(classId, courseRawData) {
     if (!globalLoggedIn || !localStorage.getItem('cookie')) {
-        showDialog('错误', '请先登录后再进行操作', 'error');
+        showToast('请先登录后再进行操作', 'error');
         return;
     }
 
     const classIdStr = String(classId);
     const existingCourse = globalCourses.find(course => String(course.id) === classIdStr);
     if (existingCourse) {
-        showDialog('信息', `课程 「${courseRawData.name || existingCourse.name} (${classIdStr})」 已经在列表中了。`, 'info');
+        showToast(`课程 「${courseRawData.name || existingCourse.name} (${classIdStr})」 已经在列表中了。`, 'error');
         return;
     }
 
@@ -579,7 +579,7 @@ function addCourse(classId, courseRawData) {
         .then(lessonDetails => {
             globalLoading.setAttribute('showed', 'false');
             if (lessonDetails === false) {
-                showDialog('错误', `无法添加课程 「${courseRawData.name || classIdStr}」，获取上课安排失败`, 'error');
+                showToast(`无法添加课程 「${courseRawData.name || classIdStr}」，获取上课安排失败`, 'error');
                 return;
             }
 
@@ -610,7 +610,7 @@ function addCourse(classId, courseRawData) {
 
             globalCourses.push(courseToAdd);
             saveCoursesToLocalStorage();
-            showDialog('成功', `课程 「${courseToAdd.name} (${classIdStr})」 已成功添加到列表。`, 'success');
+            showToast(`课程 「${courseToAdd.name} (${classIdStr})」 已添加到列表。`, 'success');
             if (document.getElementById('operation-panel').classList.contains('hidden') === false) {
                 initializeSelectedCourseTable();
             }
@@ -618,7 +618,7 @@ function addCourse(classId, courseRawData) {
         .catch(error => {
             globalLoading.setAttribute('showed', 'false');
             console.error(`添加课程 「${classIdStr}」 过程出错:`, error);
-            showDialog('错误', `添加课程 「${courseRawData.name || classIdStr}」 时发生错误，请查看控制台。`, 'error');
+            showToast(`添加课程 「${courseRawData.name || classIdStr}」 时发生错误，请查看控制台。`, 'error');
         });
 }
 
@@ -630,10 +630,10 @@ function removeCourse(classId) {
 
     if (globalCourses.length < originalLength) {
         saveCoursesToLocalStorage();
-        showDialog('成功', `课程 「${courseToRemove ? courseToRemove.name : ''} (${classIdStr})」 已从列表中移除。`, 'success');
+        showToast(`课程 「${courseToRemove ? courseToRemove.name : ''} (${classIdStr})」 已从列表中移除。`, 'success');
         initializeSelectedCourseTable();
     } else {
-        showDialog('信息', `课程 「(${classIdStr})」 未在列表中找到。`, 'info');
+        showToast(`课程 「${classIdStr}」 未在列表中找到，无法移除。`, 'error');
     }
 }
 
@@ -668,7 +668,7 @@ function initializeSelectedCourseTable() {
         const remove_btn = document.createElement('s-button');
         remove_btn.setAttribute("type", "outlined");
 
-        name_td.innerText = `${processCourseName(course.name, soft=false) || '未知课程'} (${course.id})`;
+        name_td.innerText = `${processCourseName(course.name, soft = false) || '未知课程'} (${course.id})`;
         name_td.style.alignContent = "center";
 
         teacher_td.innerText = course.teacher || '未知教师';
@@ -735,16 +735,16 @@ function initializeSelectedCourseTable() {
 
 function addTask() {
     if (globalCourses.length === 0) {
-        showDialog('错误', '课程列表为空，请先添加课程。', 'error');
+        showToast('课程列表为空，请先添加课程。', 'error');
         return;
     }
     if (!globalLoggedIn || !localStorage.getItem('cookie')) {
-        showDialog('错误', '请先登录后再进行操作', 'error');
+        showToast('请先登录后再进行操作', 'error');
         return;
     }
     const startTimeValue = document.getElementById('task-start-time').value.trim();
-    if (startTimeValue && verifyTimeFormat(startTimeValue) === false) {
-        showDialog('错误', '任务开始时间格式不正确，请按照 YYYY-MM-DD HH:mm:SS 的格式填写，例如 2025-09-01 12:00:00', 'error');
+    if (startTimeValue === '' || verifyTimeFormat(startTimeValue) === false) {
+        showToast('任务开始时间格式不正确，请按照 YYYY-MM-DD HH:mm:SS 的格式填写，例如 2025-09-01 12:00:00', 'error');
         return;
     }
     const cookie = localStorage.getItem('cookie');
@@ -790,12 +790,12 @@ function addTask() {
                 } else if (data && data.task_id) {
                     taskIdMessage = ` (ID: ${data.task_id})`;
                 }
-                showDialog('成功', `抢课任务已添加${taskIdMessage}，您可以在任务列表中查看任务。`, 'success');
+                showToast(`抢课任务添加成功${taskIdMessage}，请注意查看任务列表。`, 'success');
                 flushTaskTable();
             });
         } else {
             return response.json().then(err => {
-                showDialog('错误', `抢课任务添加失败: ${err.message || response.statusText}`, 'error');
+                showToast(`抢课任务添加失败: ${err.message || response.statusText}`, 'error');
             }).catch(() => {
                 showDialog('错误', `抢课任务添加失败，服务器返回状态码: ${response.status}，请稍后重试或查看控制台。`, 'error');
             });
@@ -954,12 +954,12 @@ async function startTask(taskId) {
     globalLoading.setAttribute('showed', 'true');
     fetch(`/api/grabber/${taskId}/start`, { method: 'GET' }).then(response => {
         if (response.ok) {
-            showDialog('成功', `任务 ${taskId} 已启动。`, 'success');
+            showToast(`任务 ${taskId} 已成功启动。`, 'success');
         } else {
-            showDialog('错误', `启动任务 ${taskId} 失败: ${response.statusText}`, 'error');
+            showToast(`启动任务 ${taskId} 失败: ${response.statusText}`, 'error');
         }
     }).catch(error => {
-        showDialog('错误', `启动任务 ${taskId} 失败: ${error.message}`, 'error');
+        showToast(`启动任务 ${taskId} 失败: ${error.message}`, 'error');
     }).finally(() => {
         flushTaskTable();
         globalLoading.setAttribute('showed', 'false');
@@ -970,9 +970,9 @@ async function stopTask(taskId) {
     globalLoading.setAttribute('showed', 'true');
     fetch(`/api/grabber/${taskId}/cancel`, { method: 'GET' }).then(response => {
         if (response.ok) {
-            showDialog('成功', `任务 ${taskId} 已停止。`, 'success');
+            showToast(`任务 ${taskId} 已成功停止。`, 'success');
         } else {
-            showDialog('错误', `停止任务 ${taskId} 失败: ${response.statusText}`, 'error');
+            showToast(`停止任务 ${taskId} 失败: ${response.statusText}`, 'error');
         }
     }).finally(() => {
         flushTaskTable();
@@ -1007,15 +1007,15 @@ async function removeTask(taskId) {
     try {
         const response = await fetch(`/api/grabber/${taskId}`, { method: 'DELETE' });
         if (response.ok) {
-            showDialog('成功', `任务 ${taskId} 已成功移除。`, 'success');
+            showToast(`任务 ${taskId} 已成功移除。`, 'success');
         } else {
             const err = await response.json().catch(() => ({ message: response.statusText }));
             console.warn(`移除任务 ${taskId} 失败:`, err.message || response.status);
-            showDialog('错误', `移除任务 ${taskId} 失败: ${err.message || response.statusText}`, 'error');
+            showToast(`移除任务 ${taskId} 失败: ${err.message || response.statusText}`, 'error');
         }
     } catch (error) {
         console.error(`移除任务 ${taskId} 失败:`, error);
-        showDialog('错误', `移除任务 ${taskId} 失败: ${error.message}`, 'error');
+        showToast(`移除任务 ${taskId} 失败: ${error.message}`, 'error');
     } finally {
         await flushTaskTable();
         globalLoading.setAttribute('showed', 'false');
@@ -1049,12 +1049,12 @@ function toggleAutoRefreshTaskTable() {
         currentIndicatorSteps = 0;
     } else {
         if (isNaN(delay)) {
-            showDialog('错误', "刷新时间必须是一个数字！", 'error');
+            showToast("刷新时间必须是一个数字！", 'error');
             delayInput.focus();
             return;
         }
         if (delay < 1) {
-            showDialog('错误', "刷新时间必须大于等于 1 秒！", 'error');
+            showToast("刷新时间必须大于等于 1 秒！", 'error');
             delayInput.focus();
             return;
         }
@@ -1155,6 +1155,23 @@ function processCourseName(name, soft = true) {
         formattedCourseName = name || "";
     }
     return decodeHtmlEntities(formattedCourseName);
+}
+
+function showToast(message, type = 'info') {
+    Toastify(
+        {
+            text: message,
+            duration: 3000,
+            close: true,
+            gravity: 'bottom',
+            position: 'right',
+            style: {
+                background: type === 'error' ? 'linear-gradient(to right, #fb7185, #ef4444)' : (type === 'success' ? 'linear-gradient(to right, #34d399, #22d3ee)' : 'linear-gradient(to right, #6366f1, #3b82f6)'),
+                borderRadius: '16px',
+            },
+            stopOnFocus: true,
+        }
+    ).showToast();
 }
 
 document.addEventListener('DOMContentLoaded', () => {

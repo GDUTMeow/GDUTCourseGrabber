@@ -47,6 +47,12 @@ class CourseSelectionFailed(Exception):
     选课失败。
     """
 
+    reason: str
+
+    def __init__(self, reason: str) -> None:
+        self.reason = reason
+        super().__init__(reason)
+
 
 class EasClient:
     """

@@ -9,7 +9,7 @@ from enum import IntEnum
 from typing import Iterable
 
 from gdut_course_grabber.models import Account, Course, GrabberConfig
-from gdut_course_grabber.utils.eas import AuthorizationFailed, EasClient
+from gdut_course_grabber.utils.eas import AuthorizationFailed, EasClient, CourseSelectionFailed
 
 logger = logging.getLogger(__name__)
 
@@ -133,6 +133,10 @@ class Grabber:
                 except AuthorizationFailed:
                     raise
                 except Exception as ex:
+                    if isinstance(ex, CourseSelectionFailed) and "超出选课要求门数" in ex.reason:
+                        await self.cancel()
+                        break
+
                     logger.warning("grab course %s (%d) failed: %s", course.name, course.id, ex)
 
                     if not self.config.retry:

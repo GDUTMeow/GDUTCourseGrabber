@@ -159,7 +159,7 @@ async function initialize() {
             if (Array.isArray(parsedCourses)) {
                 globalCourses = parsedCourses;
             } else {
-                console.warn("localStorage中selectedCourses数据格式不正确，已重置。");
+                console.warn("localStorage中selectedCourses数据格式不正确，已重置");
                 globalCourses = [];
             }
         } catch (e) {
@@ -299,7 +299,7 @@ async function fetchNewCourses(page = 1, size = 20, positive = true) {
                 if (jsonResponse.message) {
                     showDialog('提示', jsonResponse.message, 'info');
                 } else {
-                    showDialog('错误', '获取课程列表时服务器返回未知错误。', 'error');
+                    showDialog('错误', '获取课程列表时服务器返回未知错误', 'error');
                 }
                 return (jsonResponse.data && Array.isArray(jsonResponse.data)) ? jsonResponse.data : [];
             }
@@ -350,11 +350,11 @@ function loadMoreCourses() {
                     globalCurrentPage.innerText = newPage.toString();
                     globalCurrentCount.innerText = (Number(globalCurrentCount.innerText) + newCoursesAddedCount).toString();
                 } else if (newPage > 1) {
-                    showToast('没有更多新的课程了，已经加载完所有课程。', 'info');
+                    showToast('没有更多新的课程了，已经加载完所有课程', 'info');
                 }
             } else if (coursesData === false) {
             } else {
-                console.warn('loadMoreCourses: 未获取到新的课程数据或数据格式不正确。 Data received:', coursesData);
+                console.warn('loadMoreCourses: 未获取到新的课程数据或数据格式不正确 Data received:', coursesData);
             }
         });
 }
@@ -482,11 +482,11 @@ async function fetchCourseDetail(classId, positive = true) {
             const courseLessons = jsonResponse.data;
 
             if (jsonResponse.error && jsonResponse.error !== "ok" && jsonResponse.error !== "unexpected") {
-                throw new Error(jsonResponse.message || '获取课程详情时服务器返回错误。');
+                throw new Error(jsonResponse.message || '获取课程详情时服务器返回错误');
             }
 
             if (!Array.isArray(courseLessons) || courseLessons.length === 0) {
-                console.warn(`课程 ${classId} 未找到授课安排，将使用基础信息。`);
+                console.warn(`课程 ${classId} 未找到授课安排，将使用基础信息`);
                 if (!positive) {
                     return {
                         term: "未知",
@@ -498,7 +498,7 @@ async function fetchCourseDetail(classId, positive = true) {
                         sessions: { start: '?', end: '?' },
                     };
                 } else {
-                    throw new Error('未找到课程详细信息或课程无授课安排。');
+                    throw new Error('未找到课程详细信息或课程无授课安排');
                 }
             }
 
@@ -571,7 +571,7 @@ async function addCourse(classId, courseRawData) {
     const classIdStr = String(classId);
     const existingCourse = globalCourses.find(course => String(course.id) === classIdStr);
     if (existingCourse) {
-        showToast(`课程 「${courseRawData.name || existingCourse.name} (${classIdStr})」 已经在列表中了。`, 'error');
+        showToast(`课程 「${courseRawData.name || existingCourse.name} (${classIdStr})」 已经在列表中了`, 'error');
         return;
     }
 
@@ -611,7 +611,7 @@ async function addCourse(classId, courseRawData) {
 
             globalCourses.push(courseToAdd);
             saveData('userSelectedCourses', globalCourses);
-            showToast(`课程 「${courseToAdd.name} (${classIdStr})」 已添加到列表。`, 'success');
+            showToast(`课程 「${courseToAdd.name} (${classIdStr})」 已添加到列表`, 'success');
             if (document.getElementById('operation-panel').classList.contains('hidden') === false) {
                 initializeSelectedCourseTable();
             }
@@ -619,7 +619,7 @@ async function addCourse(classId, courseRawData) {
         .catch(error => {
             globalLoading.setAttribute('showed', 'false');
             console.error(`添加课程 「${classIdStr}」 过程出错:`, error);
-            showToast(`添加课程 「${courseRawData.name || classIdStr}」 时发生错误，请查看控制台。`, 'error');
+            showToast(`添加课程 「${courseRawData.name || classIdStr}」 时发生错误，请查看控制台`, 'error');
         });
 }
 
@@ -631,10 +631,10 @@ function removeCourse(classId) {
 
     if (globalCourses.length < originalLength) {
         saveData('userSelectedCourses', globalCourses);
-        showToast(`课程 「${courseToRemove ? courseToRemove.name : ''} (${classIdStr})」 已从列表中移除。`, 'success');
+        showToast(`课程 「${courseToRemove ? courseToRemove.name : ''} (${classIdStr})」 已从列表中移除`, 'success');
         initializeSelectedCourseTable();
     } else {
-        showToast(`课程 「${classIdStr}」 未在列表中找到，无法移除。`, 'error');
+        showToast(`课程 「${classIdStr}」 未在列表中找到，无法移除`, 'error');
     }
 }
 
@@ -736,7 +736,7 @@ function initializeSelectedCourseTable() {
 
 async function addTask() {
     if (globalCourses.length === 0) {
-        showToast('课程列表为空，请先添加课程。', 'error');
+        showToast('课程列表为空，请先添加课程', 'error');
         return;
     }
     if (!globalLoggedIn || !await getData('userSessionId')) {
@@ -791,14 +791,14 @@ async function addTask() {
                 } else if (data && data.task_id) {
                     taskIdMessage = ` (ID: ${data.task_id})`;
                 }
-                showToast(`抢课任务添加成功${taskIdMessage}，请注意查看任务列表。`, 'success');
+                showToast(`抢课任务添加成功${taskIdMessage}，请注意查看任务列表`, 'success');
                 flushTaskTable();
             });
         } else {
             return response.json().then(err => {
                 showToast(`抢课任务添加失败: ${err.message || response.statusText}`, 'error');
             }).catch(() => {
-                showDialog('错误', `抢课任务添加失败，服务器返回状态码: ${response.status}，请稍后重试或查看控制台。`, 'error');
+                showDialog('错误', `抢课任务添加失败，服务器返回状态码: ${response.status}，请稍后重试或查看控制台`, 'error');
             });
         }
     }).catch(error => {
@@ -852,6 +852,7 @@ async function flushTaskTable() {
 
     if (!tasksData || !tasksData.data || tasksData.data.length === 0) {
         if (empty_message) empty_message.classList.remove('hidden');
+        showToast('没有找到抢课任务哦', 'info');
         return;
     }
     if (empty_message) empty_message.classList.add('hidden');
@@ -932,7 +933,7 @@ async function flushTaskTable() {
 
         const delay_td = document.createElement('s-td');
         delay_td.style.alignContent = 'center';
-        delay_td.innerText = delay.saveAndLogin('PT', '').replace('S', ' 秒');
+        delay_td.innerText = delay.replace('PT', '').replace('S', ' 秒');
         table_line.appendChild(delay_td);
 
         const retry_td = document.createElement('s-td');
@@ -955,7 +956,7 @@ async function startTask(taskId) {
     globalLoading.setAttribute('showed', 'true');
     fetch(`/api/grabber/${taskId}/start`, { method: 'GET' }).then(response => {
         if (response.ok) {
-            showToast(`任务 ${taskId} 已成功启动。`, 'success');
+            showToast(`任务 ${taskId} 已成功启动`, 'success');
         } else {
             showToast(`启动任务 ${taskId} 失败: ${response.statusText}`, 'error');
         }
@@ -971,7 +972,7 @@ async function stopTask(taskId) {
     globalLoading.setAttribute('showed', 'true');
     fetch(`/api/grabber/${taskId}/cancel`, { method: 'GET' }).then(response => {
         if (response.ok) {
-            showToast(`任务 ${taskId} 已成功停止。`, 'success');
+            showToast(`任务 ${taskId} 已成功停止`, 'success');
         } else {
             showToast(`停止任务 ${taskId} 失败: ${response.statusText}`, 'error');
         }
@@ -1007,7 +1008,7 @@ async function removeTask(taskId) {
     try {
         const response = await fetch(`/api/grabber/${taskId}`, { method: 'DELETE' });
         if (response.ok) {
-            showToast(`任务 ${taskId} 已成功移除。`, 'success');
+            showToast(`任务 ${taskId} 已成功移除`, 'success');
         } else {
             const err = await response.json().catch(() => ({ message: response.statusText }));
             console.warn(`移除任务 ${taskId} 失败:`, err.message || response.status);

@@ -1,6 +1,12 @@
 @echo off
 chcp 65001
 
+echo Installing PDM...
+pip install pdm
+
+echo Installing packages...
+pdm install --no-self --no-editable --prod --with pack
+
 :: 运行打包工具
 echo Running PyInstaller...
 pdm run pyinstaller ^

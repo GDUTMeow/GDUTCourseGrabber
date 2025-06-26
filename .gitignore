@@ -176,3 +176,6 @@ config.json
 # Artifacts
 *.build
 *.dist
+
+# CPython Binary
+python/

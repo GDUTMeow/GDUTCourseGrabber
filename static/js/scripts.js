@@ -132,7 +132,8 @@ function saveAndLogin(positive = true) {
         showDialog('错误', '请先输入 JSESSIONID 再进行登录', 'error');
         return;
     }
-    login(cookieField.value, positive);
+    const cookie = cookieField.value.replace("JSESSIONID=", "").trim();
+    login(cookie, positive);
     syncSessionId();
 }
 

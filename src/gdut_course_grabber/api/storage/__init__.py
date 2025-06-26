@@ -38,10 +38,6 @@ async def set(request: Request, key: str) -> ApiResponse[None]:
     """
 
     body = await request.body()
-
-    try:
-        storage_manager.set(key, body)
-    except KeyError as ex:
-        raise entity_not_found_error(id) from ex
+    storage_manager.set(key, body)
 
     return ApiResponse(data=None)

@@ -28,7 +28,7 @@ def get(key: str) -> ApiResponse[bytes]:
     return ApiResponse(data=value)
 
 
-@router.post("/{key}")
+@router.put("/{key}")
 async def set(request: Request, key: str) -> ApiResponse[None]:
     """
     向指定键存储数据。

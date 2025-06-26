@@ -134,8 +134,7 @@ class Grabber:
                     raise
                 except Exception as ex:
                     if isinstance(ex, CourseSelectionFailed) and "超出选课要求门数" in ex.reason:
-                        await self.cancel()
-                        break
+                        raise
 
                     logger.warning("grab course %s (%d) failed: %s", course.name, course.id, ex)
 
@@ -161,9 +160,9 @@ class Grabber:
         while self._queue:
             try:
                 await self._select_courses()
-            except AuthorizationFailed:
-                logging.error("authorization failed, grabber task terminated.")
-                return
+            except Exception as ex:
+                logging.error("error occurred, task cancelled: %s", ex)
+                break
 
         await self.cancel()
 

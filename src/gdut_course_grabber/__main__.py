@@ -18,13 +18,20 @@ app.mount("/api", api.app)
 app.mount("/", StaticFiles(directory=static_path, html=True))
 
 if __name__ == "__main__":
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.bind(("127.0.0.1", 0))
-        sock.listen()
+    with (
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock4,
+        socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as sock6,
+    ):
+        sock4.bind(("127.0.0.1", 0))
+        sock4.listen()
 
-        port = sock.getsockname()[1]
+        port = sock4.getsockname()[1]
+
+        sock6.bind(("::1", port))
+        sock6.listen()
+
         config = uvicorn.Config(app, host="localhost", port=port)
         server = uvicorn.Server(config=config)
 
         webbrowser.open(f"http://localhost:{port}")
-        server.run(sockets=[sock])
+        server.run(sockets=[sock4, sock6])

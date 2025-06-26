@@ -22,6 +22,7 @@ class Course(BaseModel):
     teacher: str  # 教师姓名
     preset: bool = False  # 是否为预设课程
     remark: Optional[str] = ""  # 备注信息
+    conflix: set[int] # 冲突的课程
 
 
 class Config(BaseModel):
@@ -180,7 +181,7 @@ def add_course() -> Any:
 
     # 添加课程到配置
     course = Course(
-        kcrwdm=kcrwdm, kcmc=kcmc, teacher=teacher, preset=preset, remark=remark
+        kcrwdm=kcrwdm, kcmc=kcmc, teacher=teacher, preset=preset, remark=remark, conflix=set[int]()
     )
     config.courses.append(course)
     save_config(config)
@@ -229,7 +230,7 @@ def update_remark() -> Any:
     return jsonify({"error": "未找到对应的课程"}), 404
 
 
-def grab_course(course: Course, cookie: str) -> bool:
+def grab_course(course: Course, cookie: str) -> int:
     """
     执行抢课操作，发送抢课请求。
 
@@ -238,7 +239,10 @@ def grab_course(course: Course, cookie: str) -> bool:
         cookie (str): 用户的 Cookie，用于身份验证。
 
     Returns:
-        bool: 如果已经选了该课程，返回 True，否则返回 False。
+        int:
+            -1: 网络错误/未开始抢课
+            0: 已达最大选课数量/课程报名人数已满
+            1: 已成功选课
     """
     url = "https://jxfw.gdut.edu.cn/xsxklist!getAdd.action"
     headers = {
@@ -267,21 +271,21 @@ def grab_course(course: Course, cookie: str) -> bool:
             f"抢课请求发送，课程ID: {course.kcrwdm}, 名称: {course.kcmc}, 老师: {course.teacher}, 响应: {response.text}"
         )
         if "当前不是选课时间" in response.text:
-            return False
+            return -1
         if "您已经选了该门课程" in response.text:
-            return True
+            return 1
         if "1" in response.text:
-            return True
+            return 1
         # 满人了（目前不知道具体的提示是什么，还没遇到）
         if "满" in response.text: 
-            return True
+            return 0
         if "超出" in response.text:
-            return True
+            return 0
 
     except Exception as e:
         log_message(f"抢课失败: {e}")
 
-    return False
+    return -1
 
 
 def start_grab_course_task(config: Config) -> None:
@@ -291,7 +295,6 @@ def start_grab_course_task(config: Config) -> None:
     Args:
         config (Config): 当前的配置对象。
     """
-    print ("start_grab_course_task 1")
     try:
         # 解析抢课开始时间
         start_time = datetime.strptime(config.start_time, "%Y-%m-%d %H:%M:%S")
@@ -308,12 +311,10 @@ def start_grab_course_task(config: Config) -> None:
 
         log_message(f"当前时间 {current_time.strftime('%Y-%m-%d %H:%M:%S')} 不在预设的抢课时间范围内")
         time.sleep(0.1)
-    print ("start_grab_course_task 2")
     if config.queue_mode:
         grab_cours_queue_mode(config)
     else:
         grab_cours_normal_mode(config)
-    print ("start_grab_course_task 3")
     stop_grab_course()
 
 def grab_cours_queue_mode(config: Config) -> None:
@@ -322,10 +323,24 @@ def grab_cours_queue_mode(config: Config) -> None:
     按照设置的顺序/优先级进行抢课
     """
     # 重复两遍以确认
+    success_list = set[int]()
     for _ in range(2):
         for course in config.courses:
-            while not grab_course(course, config.account.cookie):
+            conflixed = False
+
+            for conflix in course.conflix:
+                if conflix in success_list:
+                    log_message(f"课程{course.kcmc}设置的冲突课程已选，跳过抢课")
+                    conflixed = True
+
+            while not conflixed:
+                result = grab_course(course, config.account.cookie)
                 time.sleep(config.delay)  # 延迟，防止请求过于频繁
+                if result == 1: # 成功则下一个
+                    success_list.add(course.kcrwdm)
+                    break
+                if result == 0: # 失败(无法选课)则下一个
+                    break
 
 
 def grab_cours_normal_mode(config: Config) -> None:
@@ -333,16 +348,30 @@ def grab_cours_normal_mode(config: Config) -> None:
     标准模式:
     正常循环抢课直至没有可抢的课
     """
-    finished = set[int]()  # 记录已成功抢到的课程ID
-
+    finished_list = set[int]()  # 记录完成抢课任务(成功/满课/满人)课程ID
+    success_list = set[int]() # 记录已成功抢到的课程ID
     for course in config.courses:
+        conflixed = False
+        for conflix in course.conflix:
+            if conflix in success_list:
+                log_message(f"课程{course.kcmc}设置的冲突课程已选，跳过抢课")
+                finished_list.add(course.kcrwdm)
+                conflixed = True
+
+        if conflixed:
+            continue
+
         if len(finished) == len(config.courses):
             stop_grab_course()
             time.sleep(3)
             log_message("抢课完成！")
 
-        if grab_course(course, config.account.cookie):
-            finished.add(course.kcrwdm)
+        result = grab_course(course, config.account.cookie)
+        if result != -1:
+            finished_list.add(course.kcrwdm)
+        
+        if result == 1:
+            success_list.add(course.kcrwdm)
 
         time.sleep(config.delay)  # 延迟，防止请求过于频繁
 
@@ -407,10 +436,12 @@ def update_config() -> Any:
         teacher_list = request.form.getlist("teacher")
         preset_list = request.form.getlist("preset")  # 获取 preset 标记
         remark_list = request.form.getlist("remark")  # 获取备注
+        conflix_list = request.form.getlist("conflix")
 
-        for kcrwdm, kcmc, teacher, preset, remark in zip(
-            kcrwdm_list, kcmc_list, teacher_list, preset_list, remark_list
+        for kcrwdm, kcmc, teacher, preset, remark, conflix in zip(
+            kcrwdm_list, kcmc_list, teacher_list, preset_list, remark_list, conflix_list
         ):
+            conflix = set(map(int, conflix.split(",")))
             kcrwdm = int(kcrwdm)
             preset = preset.lower() == "true"
             courses.append(
@@ -420,6 +451,7 @@ def update_config() -> Any:
                     teacher=teacher,
                     preset=preset,
                     remark=remark,
+                    conflix=conflix
                 )
             )
     except ValueError:

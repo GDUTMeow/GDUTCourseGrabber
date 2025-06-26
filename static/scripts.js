@@ -156,6 +156,7 @@ function displayCurrentPage() {
         row.innerHTML = `
             <td>${course.kcrwdm}</td>
             <td>${course.kcmc} (${course.xf}分)</td>
+            <td>${course.kcflmc.substring(0, 2) || ''}</td>
             <td>${course.xmmc}</td>
             <td>${course.teaxm}</td>
             <td>${course.jxbrs}/${course.pkrs}</td>

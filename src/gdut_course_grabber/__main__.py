@@ -2,6 +2,7 @@
 GDUTCourseGrabber 程序入口。
 """
 
+import contextlib
 import socket
 import webbrowser
 
@@ -34,4 +35,6 @@ if __name__ == "__main__":
         server = uvicorn.Server(config=config)
 
         webbrowser.open(f"http://localhost:{port}")
-        server.run(sockets=[sock4, sock6])
+
+        with contextlib.suppress(KeyboardInterrupt):
+            server.run(sockets=[sock4, sock6])

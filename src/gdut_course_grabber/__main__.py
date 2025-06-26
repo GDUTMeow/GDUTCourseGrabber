@@ -24,6 +24,8 @@ if __name__ == "__main__":
         sock.listen()
 
         port = sock.getsockname()[1]
+        config = uvicorn.Config(app, host="localhost", port=port)
+        server = uvicorn.Server(config=config)
+        
         webbrowser.open(f"http://localhost:{port}")
-
-        uvicorn.run(app, fd=sock.fileno())
+        server.run(sockets=[sock])

@@ -1,0 +1,130 @@
+html,
+body {
+    height: 100%;
+    overflow: hidden;
+    margin: 0;
+    /**禁用字体缩放**/
+    -webkit-text-size-adjust: none;
+}
+
+/**隐藏未加载的组件**/
+:not(:defined) {
+    display: none;
+}
+
+s-page {
+    --s-color-primary: #7746ac;
+    --s-color-on-primary: #ffffff;
+    --s-color-primary-container: #efdbff;
+    --s-color-on-primary-container: #2b0052;
+    --s-color-secondary: #655a6f;
+    --s-color-on-secondary: #ffffff;
+    --s-color-secondary-container: #ecddf6;
+    --s-color-on-secondary-container: #21182a;
+    --s-color-tertiary: #805158;
+    --s-color-on-tertiary: #ffffff;
+    --s-color-tertiary-container: #ffd9dd;
+    --s-color-on-tertiary-container: #321017;
+    --s-color-error: #ba1a1a;
+    --s-color-on-error: #ffffff;
+    --s-color-error-container: #ffdad6;
+    --s-color-on-error-container: #410002;
+    --s-color-background: #fffbff;
+    --s-color-on-background: #1d1b1e;
+    --s-color-outline: #7b757f;
+    --s-color-outline-variant: #ccc4cf;
+    --s-color-surface: #fffbff;
+    --s-color-on-surface: #1d1b1e;
+    --s-color-surface-variant: #e9e0eb;
+    --s-color-on-surface-variant: #4a454e;
+    --s-color-inverse-surface: #322f33;
+    --s-color-inverse-on-surface: #f5eff4;
+    --s-color-inverse-primary: #dbb8ff;
+    --s-color-surface-container: #f2ecf1;
+    --s-color-surface-container-lowest: #e7e1e5;
+    --s-color-surface-container-low: #ede6eb;
+    --s-color-surface-container-high: #f8f2f6;
+    --s-color-surface-container-highest: #ffffff;
+    --s-color-dark-primary: #dbb8ff;
+    --s-color-dark-on-primary: #460c7b;
+    --s-color-dark-primary-container: #5e2c93;
+    --s-color-dark-on-primary-container: #efdbff;
+    --s-color-dark-secondary: #d0c1da;
+    --s-color-dark-on-secondary: #362d3f;
+    --s-color-dark-secondary-container: #4d4357;
+    --s-color-dark-on-secondary-container: #ecddf6;
+    --s-color-dark-tertiary: #f3b7bf;
+    --s-color-dark-on-tertiary: #4b252b;
+    --s-color-dark-tertiary-container: #653a41;
+    --s-color-dark-on-tertiary-container: #ffd9dd;
+    --s-color-dark-error: #ffb4ab;
+    --s-color-dark-on-error: #690005;
+    --s-color-dark-error-container: #93000a;
+    --s-color-dark-on-error-container: #ffb4ab;
+    --s-color-dark-background: #1d1b1e;
+    --s-color-dark-on-background: #e7e1e5;
+    --s-color-dark-outline: #958e98;
+    --s-color-dark-outline-variant: #4a454e;
+    --s-color-dark-surface: #1d1b1e;
+    --s-color-dark-on-surface: #e7e1e5;
+    --s-color-dark-surface-variant: #4a454e;
+    --s-color-dark-on-surface-variant: #ccc4cf;
+    --s-color-dark-inverse-surface: #e7e1e5;
+    --s-color-dark-inverse-on-surface: #322f33;
+    --s-color-dark-inverse-primary: #7746ac;
+    --s-color-dark-surface-container: #211f22;
+    --s-color-dark-surface-container-lowest: #0f0d11;
+    --s-color-dark-surface-container-low: #1d1b1e;
+    --s-color-dark-surface-container-high: #2c292d;
+    --s-color-dark-surface-container-highest: #373438;
+}
+
+s-card {
+    /* Ensure padding is inside the calculated width */
+    box-sizing: border-box;
+
+    /* Calculate width: Always at least 2% margin on each side (total 4vw removed) */
+    width: calc(100% - 8vw);
+
+    /* Cap the maximum width to 1200px */
+    /* At 1600px screen width, 1200px is exactly 75% of the screen (1600 * 0.75 = 1200) */
+    /* Beyond 1600px, the card stays 1200px, and the side margins grow. */
+    max-width: 1380px;
+
+    /* Center the card horizontally and apply vertical margins */
+    margin: 16px auto;
+
+    /* Apply padding as originally specified */
+    padding: 16px;
+
+    /* Basic visual styles for s-card (assuming it's a custom component) */
+    border-radius: 8px;
+}
+
+.hidden {
+    display: none;
+}
+
+.full-width {
+    width: 100%;
+    /* max-width: 100%; */
+}
+
+s-text-field {
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+s-divider {
+    margin-top: 32px;
+    margin-bottom: 32px;
+}
+
+ul {
+    line-height: 2em !important;
+}
+
+a[type="no-decoration"] {
+    color: #1d1b1e !important;
+    text-decoration: none !important;
+}

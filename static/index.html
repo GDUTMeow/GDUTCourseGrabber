@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="zh-cn">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <link rel="icon" type="image/png" href="img/favicon.ico">
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/toastify.css" />
+  <title>GDUT 抢课助手 | GDUTCourseGrabber</title>
+</head>
+
+<body>
+  <s-page theme="light">
+    <!--抽屉布局-->
+    <s-drawer>
+      <!--左侧抽屉-->
+      <div slot="start" style="width: auto;">
+        <s-navigation mode="rail" onchange="changePanel(this.selectedIndex)">
+          <!--抽屉顶部-->
+          <s-icon-button slot="start" type="filled-tonal">
+            <img src="img/GDUT.png" alt="Logo" style="width: 40px; height: 40px;" />
+          </s-icon-button>
+          <s-navigation-item selected="true">
+            <s-icon slot="icon">
+              <svg t="1750155662984" class="icon" viewBox="0 0 1171 1024" version="1.1"
+                xmlns="http://www.w3.org/2000/svg" p-id="5544" width="200" height="200">
+                <path
+                  d="M1121.034 947.942c0 0-142.543-24.912-274.03-24.912-130.08 0-249.119 24.912-249.119 24.912-4.327 0-8.453-0.725-12.456-1.761-4.003 1.036-8.129 1.761-12.456 1.761 0 0-142.543-24.912-274.03-24.912-130.08 0-249.119 24.912-249.119 24.912-27.518 0-49.824-22.306-49.824-49.824L0 175.674c0 33.215 29.565-99.647 309.892-99.647 157.587 0 236.431 40.771 275.57 71.502 38.97-30.731 117.131-71.502 272.491-71.502 284.344 0 312.905 132.862 312.905 99.647l0 722.444C1170.858 925.636 1148.552 947.942 1121.034 947.942zM548.061 225.498c0 0-49.824-74.736-249.119-74.736-166.081 0-224.207 74.736-224.207 74.736l0 622.797c0 27.518 22.306 24.912 49.824 24.912 0 0 85.433-24.912 174.384-24.912 97.495 0 199.295 24.912 199.295 24.912 27.518 0 49.824 2.606 49.824-24.912L548.062 225.498zM1096.122 225.498c0 0-27.802-41.543-124.559-62.676l0 386.53-99.647-74.736-99.647 74.736L772.269 156.537c-109.032 17.411-149.471 68.961-149.471 68.961l0 622.797c0 27.518 22.306 24.912 49.824 24.912 0 0 85.433-24.912 174.383-24.912 97.495 0 199.295 24.912 199.295 24.912 27.518 0 49.824 2.606 49.824-24.912L1096.124 225.498zM423.502 673.911 199.295 673.911c-13.759 0-24.912-11.153-24.912-24.912l0-24.912c0-13.759 11.153-24.912 24.912-24.912l224.207 0c13.759 0 24.912 11.153 24.912 24.912L448.414 649C448.414 662.758 437.261 673.911 423.502 673.911zM423.502 449.705 199.295 449.705c-13.759 0-24.912-11.153-24.912-24.912l0-24.912c0-13.759 11.153-24.912 24.912-24.912l224.207 0c13.759 0 24.912 11.153 24.912 24.912l0 24.912C448.414 438.552 437.261 449.705 423.502 449.705z"
+                  p-id="5545"></path>
+              </svg>
+            </s-icon>
+            <div slot="text">课程列表</div>
+          </s-navigation-item>
+          <s-navigation-item>
+            <s-icon slot="icon">
+              <svg t="1750155787906" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                xmlns="http://www.w3.org/2000/svg" p-id="6913" width="200" height="200">
+                <path
+                  d="M884.8 1014.4H144c-36.8 0-67.2-30.4-67.2-67.2V209.6c0-36.8 30.4-67.2 67.2-67.2h33.6v100.8c0 36.8 30.4 67.2 67.2 67.2h538.4c36.8 0 67.2-30.4 67.2-67.2V142.4H884c36.8 0 67.2 30.4 67.2 67.2v737.6c0.8 36.8-29.6 67.2-66.4 67.2z m-150.4-456c-20-19.2-52-19.2-72 0l-180 171.2-84-80c-20-19.2-52-19.2-72 0s-20 49.6 0 68l120 113.6c20 19.2 52 19.2 72 0l216-204.8c20-18.4 20-48.8 0-68z m-52-315.2h-336c-36.8 0-67.2-30.4-67.2-67.2v-33.6C413.6 44 415.2 42.4 450.4 8.8H584C616.8 40 616 44 749.6 142.4V176c0 37.6-29.6 67.2-67.2 67.2zM514.4 76c-36.8 0-67.2 30.4-67.2 67.2 0 36.8 30.4 67.2 67.2 67.2 36.8 0 67.2-30.4 67.2-67.2 0-37.6-30.4-67.2-67.2-67.2z m0 0"
+                  p-id="6914"></path>
+              </svg>
+            </s-icon>
+            <div slot="text">任务添加</div>
+          </s-navigation-item>
+          <s-navigation-item>
+            <s-icon slot="icon">
+              <svg t="1750155848880" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                xmlns="http://www.w3.org/2000/svg" p-id="7912" width="200" height="200">
+                <path
+                  d="M959.825022 191.939717C959.825022 121.2479 902.517291 63.940169 831.825474 63.940169H191.939717C121.2479 63.940169 63.940169 121.2479 63.940169 191.939717v639.885757C63.940169 902.517291 121.2479 959.825022 191.939717 959.825022h639.885757c70.691817 0 127.999548-57.307731 127.999548-127.999548V191.939717zM146.715595 146.66502a63.839021 63.839021 0 0 1 45.372232-18.784682h639.824346A64.037705 64.037705 0 0 1 895.884854 192.001129V480.093133s0.0289 0 0 0h-50.527184l-54.764574-54.710387a31.970084 31.970084 0 0 0-52.933067 12.506263L698.078535 556.676838l-93.482694-186.965389a31.970084 31.970084 0 0 0-58.279477 2.423947l-93.269561 233.168483-102.307883-358.086621a31.970084 31.970084 0 0 0-59.330697-5.519807l-119.264671 238.269247L127.880338 480.093133V192.001129A63.777609 63.777609 0 0 1 146.715595 146.66502z m730.43515 730.536299a63.456102 63.456102 0 0 1-45.253022 18.67631H192.087827c-17.112123 0-33.270563-6.574639-45.372232-18.67631S127.880338 849.110994 127.880338 831.998871V544.033302l64.135241-0.180622a32.024271 32.024271 0 0 0 28.538267-17.668439l91.261045-182.395653L417.236696 712.781162a31.977309 31.977309 0 0 0 29.112645 23.144896q0.823636 0.043349 1.64366 0.043349a31.973697 31.973697 0 0 0 29.676186-20.095998l101.560108-253.900269 96.163124 192.322635a31.970084 31.970084 0 0 0 58.926104-4.186816l47.651681-142.951433 27.552072 27.523172a31.970084 31.970084 0 0 0 22.60303 9.352604H895.884854c0.0289 0 0 0 0 0v287.965569a63.398303 63.398303 0 0 1-18.719659 45.209673z"
+                  p-id="7913"></path>
+              </svg>
+            </s-icon>
+            <div slot="text">任务状态</div>
+          </s-navigation-item>
+          <div slot="end" style="display: flex;align-items: flex-end; padding: 16px 0;">
+            <s-dialog>
+              <s-icon-button type="outlined" slot="trigger">
+                <svg viewBox="0 -960 960 960">
+                  <path
+                    d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z">
+                  </path>
+                </svg>
+              </s-icon-button>
+              <div slot="headline" style="margin-top: 16px">关于</div>
+              <div slot="text" style="margin-top: 32px; line-height: 2em;">
+                广东工业大学（GDUT）抢课助手，发挥计算机的力量，让你抢课解放双手，快人一步<br>
+                Github: <a href="https://github.com/GDUTMeow/GDUTCourseGrabber" target="_blank"
+                  type="no-decoration">GDUTMeow/GDUTCourseGrabber</a><br>
+                以下贡献者不分先后<br>
+                <div style="line-height: 3em;">
+                  <a href="https://github.com/GamerNoTitle" type="no-decoration"><s-avatar
+                      src="https://avatars.githubusercontent.com/u/28426291"></s-avatar> GamerNoTitle (Pesy
+                    Wu)</a><br>
+                  <a href="https://github.com/ricky8955555" type="no-decoration"><s-avatar
+                      src="https://avatars.githubusercontent.com/u/24487646"></s-avatar> ricky8955555
+                    (Phrinky)</a><br>
+                  <a href="https://github.com/KeqingMoe" type="no-decoration"><s-avatar
+                      src="https://avatars.githubusercontent.com/u/59642397"></s-avatar> KeqingMoe (刻晴Moe)</a><br>
+                  <a href="https://github.com/Ron-1337" type="no-decoration"><s-avatar
+                      src="https://avatars.githubusercontent.com/u/53028934"></s-avatar> Ron-1337 (Ron)</a><br>
+                  本程序吉祥物由 <a href="https://github.com/Caramel-Tea" type="no-decoration">@Caramel-Tea</a> 友情设计<br>
+                  <a href="https://github.com/Caramel-Tea" type="no-decoration"><s-avatar
+                      src="https://avatars.githubusercontent.com/u/194370561"></s-avatar> Caramel-Tea (Caramel
+                    Tea)</a><br>
+                </div>
+              </div>
+              <s-button type="text" slot="action"> 关闭 </s-button>
+            </s-dialog>
+          </div>
+        </s-navigation>
+      </div>
+
+      <s-appbar>
+        <s-icon-button slot="navigation" onclick="toggleSidebar()" id="menu-btn" value="1">
+          <svg viewBox="0 -960 960 960">
+            <path d="M640-80 240-480l400-400 71 71-329 329 329 329-71 71Z"></path>
+          </svg>
+        </s-icon-button>
+        <div slot="headline"> GDUT 抢课助手 | GDUTCourseGrabber </div>
+        <s-tooltip slot="action">
+          <s-icon-button slot="trigger" onclick="openGDUT()">
+            <svg t="1750003409860" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+              p-id="4486" width="200" height="200">
+              <path
+                d="M942.16192 357.82656v157.65504l35.92192 43.6224-69.44768 62.8736-63.87712-62.8736 38.31808-44.4416V383.7952C677.888 471.04 621.99808 498.70848 576.512 519.68c-45.50656 20.97152-78.2336 20.97152-123.74016 3.35872-44.72832-17.6128-249.91744-98.95936-356.88448-151.79776-71.0656-35.2256-75.85792-57.87648 1.57696-88.064C198.06208 243.77344 354.52928 180.03968 442.368 145.65376c51.89632-21.8112 79.83104-33.54624 127.73376-9.216 85.44256 36.88448 270.66368 112.35328 368.06656 154.29632 84.64384 38.56384 27.9552 51.15904 3.9936 67.09248zM586.87488 585.09312c49.50016-20.97152 116.57216-56.19712 190.01344-88.8832v259.95264S682.68032 860.16 515.80928 860.16c-178.83136 0-275.456-103.99744-275.456-103.99744V512.96256c56.70912 23.49056 119.76704 44.4416 196.4032 71.2704 47.12448 18.47296 107.008 24.33024 150.1184 0.86016z"
+                p-id="4487"></path>
+            </svg>
+          </s-icon-button>
+          访问学校官网
+        </s-tooltip>
+        <s-tooltip slot="action">
+          <s-icon-button slot="trigger" onclick="openGDUTJW()">
+            <svg t="1750004487785" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+              p-id="9691" width="200" height="200">
+              <path
+                d="M474.645333 836.416a45.845333 45.845333 0 0 1 0 91.669333h-191.018666a45.845333 45.845333 0 0 1 0-91.669333z m416.576-470.613333l28.608 0.042666a106.346667 106.346667 0 0 1 68.736 25.770667 103.338667 103.338667 0 0 1 35.264 77.44c0.128 12.906667 0.170667 25.813333 0.170667 38.741333l-0.170667 77.504c0.042667 61.738667 0 123.498667-0.106666 185.258667 0 13.952 0.085333 27.946667 0 41.834667a106.453333 106.453333 0 0 1-24.853334 67.413333 103.168 103.168 0 0 1-78.314666 36.416h-186.986667c-20.906667 1.344-41.941333 0.341333-62.634667-2.986667a104.746667 104.746667 0 0 1-78.549333-102.613333V496.042667a243.84 243.84 0 0 1 2.666667-50.133334 102.656 102.656 0 0 1 52.010666-67.861333 111.701333 111.701333 0 0 1 51.797334-12.202667h163.754666c19.072 0 38.144-0.085333 57.216 0z m-79.146666 334.677333a45.354667 45.354667 0 0 0-44.117334 44.117333l1.578667 11.733334c2.048 7.381333 5.973333 14.08 11.370667 19.477333l8.938666 6.890667c6.741333 3.968 14.442667 6.058667 22.272 6.037333a45.354667 45.354667 0 0 0 40.32-27.114667c2.773333-5.248 4.053333-11.093333 3.797334-17.024l-1.578667-11.733333a44.096 44.096 0 0 0-11.370667-19.456l-8.917333-6.912a43.861333 43.861333 0 0 0-22.272-6.016zM769.173333 109.738667a104.512 104.512 0 0 1 101.76 95.146666c0.704 7.957333 0.917333 15.957333 0.64 23.957334v88.298666h-207.424a131.456 131.456 0 0 0-112.149333 63.274667H242.154667a45.845333 45.845333 0 1 0 0 91.669333h290.773333v270.634667H105.045333a108.010667 108.010667 0 0 1-67.2-24.746667A104.938667 104.938667 0 0 1 0.426667 635.754667V263.68c0-29.653333-3.242667-62.037333 8.512-89.834667a105.578667 105.578667 0 0 1 96.384-64.106666z m97.578667 417.770666h-117.248a34.368 34.368 0 0 0 0 68.757334h117.248a34.368 34.368 0 0 0 0-68.757334z"
+                p-id="9692"></path>
+            </svg>
+          </s-icon-button>
+          访问教务系统
+        </s-tooltip>
+        <s-tooltip slot="action">
+          <s-icon-button slot="trigger" onclick="openGithub()">
+            <svg t="1747328466788" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+              p-id="2604" width="200" height="200">
+              <path
+                d="M511.6 76.3C264.3 76.2 64 276.4 64 523.5 64 718.9 189.3 885 363.8 946c23.5 5.9 19.9-10.8 19.9-22.2v-77.5c-135.7 15.9-141.2-73.9-150.3-88.9C215 726 171.5 718 184.5 703c30.9-15.9 62.4 4 98.9 57.9 26.4 39.1 77.9 32.5 104 26 5.7-23.5 17.9-44.5 34.7-60.8-140.6-25.2-199.2-111-199.2-213 0-49.5 16.3-95 48.3-131.7-20.4-60.5 1.9-112.3 4.9-120 58.1-5.2 118.5 41.6 123.2 45.3 33-8.9 70.7-13.6 112.9-13.6 42.4 0 80.2 4.9 113.5 13.9 11.3-8.6 67.3-48.8 121.3-43.9 2.9 7.7 24.7 58.3 5.5 118 32.4 36.8 48.9 82.7 48.9 132.3 0 102.2-59 188.1-200 212.9 23.5 23.2 38.1 55.4 38.1 91v112.5c0.8 9 0 17.9 15 17.9 177.1-59.7 304.6-227 304.6-424.1 0-247.2-200.4-447.3-447.5-447.3z"
+                p-id="2605"></path>
+            </svg>
+          </s-icon-button>
+          访问项目 Github 仓库
+        </s-tooltip>
+        <s-tooltip slot="action">
+          <s-icon-button slot="trigger"
+            onclick="document.getElementById('color-palette-dialog').setAttribute('showed', 'true')">
+            <svg t="1750151281281" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+              p-id="4368" width="200" height="200">
+              <path
+                d="M501.970824 124.235294c208.594824 0 377.705412 169.110588 377.705411 377.73553 0 50.055529-26.804706 72.222118-92.973176 90.112l-14.757647 3.764705-7.890824 1.867295-16.624941 3.674352-31.382588 6.475295-15.390118 3.433411-13.733647 3.312942-6.26447 1.686588-11.384471 3.312941c-21.323294 6.716235-34.123294 13.703529-42.164706 22.799059-14.878118 16.775529-22.287059 41.050353-26.714353 81.317647l-3.19247 33.129412-0.813177 7.830588-1.867294 14.817882c-9.938824 71.228235-30.991059 100.171294-92.551529 100.171294-208.624941 0-377.735529-169.110588-377.73553-377.705411 0-208.624941 169.110588-377.735529 377.73553-377.73553z m-123.000471 421.647059a79.058824 79.058824 0 1 0 0 158.117647 79.058824 79.058824 0 0 0 0-158.117647zM361.411765 317.500235a79.058824 79.058824 0 1 0 0 158.117647 79.058824 79.058824 0 0 0 0-158.117647z m210.823529-70.294588a79.058824 79.058824 0 1 0 0 158.117647 79.058824 79.058824 0 0 0 0-158.117647z"
+                p-id="4369"></path>
+            </svg>
+          </s-icon-button>
+          调色盘
+        </s-tooltip>
+      </s-appbar>
+
+      <s-linear-progress indeterminate="true" id="global-loading" class="hidden"></s-linear-progress>
+      <!-- MODIFIED LINE BELOW -->
+      <s-scroll-view style="flex-grow: 1; padding-top: 70px;">
+        <main style="height: 100%; justify-content: center; align-items: center;">
+          <s-dialog showed="false" id="dialog">
+            <div slot="headline" id="dialog-title" style="margin-top: 16px;"> <s-avatar
+                src="https://assets.bili33.top/img/%23Miscellaneous/Lumine_Icon.png"
+                style="margin-right: 5px; background: none !important;"></s-avatar> 荧 </div>
+            <div slot="text" id="dialog-descr" style="margin-top: 32px; line-break: anywhere;">
+              <div align="center">
+                <a href="https://ys.mihoyo.com/" target="_blank"><img
+                    src="https://assets.bili33.top/img/%23Miscellaneous/launch-genshin.jpg" width="55%"></a>
+                <s-alert>恭喜你发现了一个小彩蛋
+                  <!-- 官服：103998843 -->
+                </s-alert>
+              </div>
+              <!-- 
+                <p>欢迎加入 A&D 工作室<p>
+                <p>微信搜索「广工AD攻防实验室」关注我们的公众号</p>
+                <p>可以通过参加 ADCTF 来加入我们哟</p>
+              -->
+              <p>面对无法掌控的境遇时，人们总是喟叹自身的无力。</p>
+              <p>但在人生最陡峭的转折处，若有凡人的「渴望」达到极致，神明的视线就将投射而下。</p>
+              <p>这就是「神之眼」，受神认可者所获的外置魔力器官，用以引导元素之力。</p>
+              <p>高天之上是神的领域。「神之眼」的持有者在地上行走，当他们离世时，受选者将升入天空。</p>
+              <p>你来到这个世界以后，经常听人们谈论此事。</p>
+              <p>你自己是得不到「神之眼」的。外界生物不属于世间众生，所以他们往往只能隔岸观火⋯</p>
+              <p>将某一瞬间的渴望贯彻一生，到底是好事还是坏事呢？</p>
+              <p>在你穿行于诸多世界的旅途中，如「神之眼」一样，需要花时间去思考的见闻，还有很多⋯</p>
+            </div>
+            <s-button slot="action" type="text">确定</s-button>
+          </s-dialog>
+          <div id="courses-panel" style="margin-top: 32px; margin-bottom: 32px;" align="center">
+            <s-card style="margin-top: 32px;">
+              <div slot="headline">课程列表</div>
+              <div slot="text">
+                <s-text-field id="cookie" label="JSESSIONID" value="" class="full-width"
+                  onchange="syncSessionId()"></s-text-field>
+                <div align="right" style="margin-top: 8px;">
+                  <p id="status">当前状态：⚪ 未知</p>
+                  <s-dialog>
+                    <s-button slot="trigger" type="outlined"> 查看学分要求 </s-button>
+                    <div slot="headline" align="left"> 公选课学分修读要求 </div>
+                    <div slot="text" align="left">
+                      <div align="center">
+                        <s-alert type="warning" style="margin-bottom: 16px; margin-top: 16px;">请注意：以下要求摘录教务于 2024-12-26
+                          发在教务通知群内的《附件 1：公选课学分修读要求》文件，仅供参考</s-alert>
+                        <s-table>
+                          <s-thead>
+                            <s-tr>
+                              <s-th style="align-content: center; text-align: center;">课程类别</s-th>
+                              <s-th style="align-content: center; text-align: center;">理工类专业</s-th>
+                              <s-th style="align-content: center; text-align: center;">非理工类专业</s-th>
+                            </s-tr>
+                          </s-thead>
+                          <s-tbody>
+                            <s-tr>
+                              <s-td style="align-content: center; text-align: center;">自然科学及<br>工程技术类</s-td>
+                              <s-td style="align-content: center; text-align: center;">3 学分</s-td>
+                              <s-td style="align-content: center; text-align: center;">6 学分</s-td>
+                            </s-tr>
+                            <s-tr>
+                              <s-td style="align-content: center; text-align: center;">人文科学类</s-td>
+                              <s-td style="align-content: center; text-align: center;">6 学分</s-td>
+                              <s-td style="align-content: center; text-align: center;">3 学分</s-td>
+                            </s-tr>
+                            <s-tr>
+                              <s-td style="align-content: center; text-align: center;">美学和艺术史论类</s-td>
+                              <s-td style="align-content: center; text-align: center;">1.5 学分</s-td>
+                              <s-td style="align-content: center; text-align: center;">1.5 学分</s-td>
+                            </s-tr>
+                            <s-tr>
+                              <s-td style="align-content: center; text-align: center;">艺术鉴赏和评论类</s-td>
+                              <s-td style="align-content: center; text-align: center;">1.5 学分</s-td>
+                              <s-td style="align-content: center; text-align: center;">1.5 学分</s-td>
+                            </s-tr>
+                          </s-tbody>
+                        </s-table>
+                      </div>
+                    </div>
+                    <s-button slot="action" type="text">取消</s-button>
+                    <s-button slot="action" type="text">确定</s-button>
+                  </s-dialog>
+                  <s-button id="save-config-btn" onclick="saveAndLogin()">
+                    <s-circular-progress indeterminate="true" class="hidden"
+                      id="save-config-btn-loading"></s-circular-progress>
+                    保存并登录 </s-button>
+                </div>
+                <p>使用文档：<a
+                    href="https://github.com/GDUTMeow/GDUTCourseGrabber/">https://github.com/GDUTMeow/GDUTCourseGrabber/</a>
+                </p>
+                <s-divider></s-divider>
+                <div align="center" style="margin-bottom: 16px;">
+                  <p>当前已加载了 <span id="current-page">0</span> 页，已加载 <span id="current-count">0</span> 条</p>
+                  <s-radio-button name="page-size" onchange="onChangePageSize(10)">10 条/页</s-radio-button>
+                  <s-radio-button name="page-size" checked="true" onchange="onChangePageSize(20)">20
+                    条/页</s-radio-button>
+                  <s-radio-button name="page-size" onchange="onChangePageSize(50)">50 条/页</s-radio-button>
+                  <s-radio-button name="page-size" onchange="onChangePageSize(100)">100 条/页</s-radio-button>
+                  <s-radio-button name="page-size" onchange="onCustomPageSizeChecked()">自定义</s-radio-button>
+                  <s-text-field id="custom-page-size-input" class="hidden" label="自定义分页大小"
+                    style="margin-left: 8px;"></s-text-field>
+                  <s-button id="custom-page-size-btn"
+                    onclick="onChangePageSize(document.getElementById('custom-page-size-input').value, true)"
+                    style="margin-left: 8px;" class="hidden">确定</s-button>
+                </div>
+                <div align="center">
+                  <s-text-field id="search-course-input" label="在已加载的课程中搜索课程名称/课程ID/教师名字/课程类别"
+                    style="max-width: 88%; width: 100%;"></s-text-field>
+                  <s-button style="margin-left: 8px; width: 100%; max-width: 10%"
+                    onclick="searchCourses()"><s-circular-progress indeterminate="true" id="search-btn-indicator"
+                      class="hidden"></s-circular-progress> 搜索</s-button>
+                </div>
+                <s-table style="overflow: auto; display: block; text-align: center;">
+                  <s-thead>
+                    <s-tr>
+                      <s-th>课程名称 (ID)</s-th>
+                      <s-th>教师名字</s-th>
+                      <s-th>课程类别</s-th>
+                      <s-th>人数限制（已选/上限）</s-th>
+                      <s-th>操作</s-th>
+                    </s-tr>
+                  </s-thead>
+                  <s-tbody id="content-table-body">
+                  </s-tbody>
+                </s-table>
+                <s-empty id="content-no-content-tip">什么都没有诶？！先登录一下吧 orz</s-empty>
+                <div align="center" style="margin-top: 16px;">
+                  <s-button id="load-more-btn" onclick="loadMoreCourses()"> <s-circular-progress indeterminate="true"
+                      class="hidden" id="load-more-btn-loading"></s-circular-progress> 加载更多 </s-button>
+                  <s-button id="back-to-top"
+                    onclick="document.querySelector('s-scroll-view').scrollTo({ top: 0, behavior: 'smooth' })"> 回到顶部
+                  </s-button>
+                </div>
+              </div>
+            </s-card>
+          </div>
+          <div id="operation-panel" style="margin-top: 32px; margin-bottom: 32px;" align="center" class="hidden">
+            <s-card id="operation-panel" style="margin-top: 16px; margin-bottom: 16px;">
+              <div slot="headline">任务添加</div>
+              <div slot="text" style="margin-top: 16px;">
+                <p>当前已经选择了以下课程（共 <span id="selected-courses-count">0</span> 门）</p>
+                <s-table style="overflow: auto; display: block; text-align: center;">
+                  <s-thead>
+                    <s-tr>
+                      <s-th>课程名称 (ID)</s-th>
+                      <s-th>教师名字</s-th>
+                      <s-th>上课时间</s-th>
+                      <s-th>操作</s-th>
+                    </s-tr>
+                  </s-thead>
+                  <s-tbody id="selected-table-body">
+                  </s-tbody>
+                </s-table>
+                <s-empty id="operation-panel-course-empty" class="hidden">看起来你还没有选择要上的课诶？</s-empty>
+                <s-divider></s-divider>
+                <div align="left">
+                  <s-text-field id="task-sessionid" label="JESSIONID" style="display: grid; width: auto;"
+                    readOnly="true">
+                    <div slot="text">若需要修改，请到课程列表页面进行修改</div>
+                  </s-text-field>
+                  <s-text-field label="任务开始时间（YYYY-MM-DD HH:mm:SS）" id="task-start-time"
+                    style="display: grid; width: auto;" onchange="verifyTimeFormat(this.value)">
+                    <div slot="text">任务开始的时间，必须按照 YYYY-MM-DD HH:mm:SS 的格式填写，例如 <b>2025-09-01 12:00:00</b></div>
+                  </s-text-field>
+                  <s-text-field id="task-delay" label="抢课延迟（秒）" value="0.5" type="number"
+                    style="display: grid; width: auto;">
+                    <div slot="text">设置每隔多久发送一次抢课请求，越低越快，对电脑的性能要求越高，对服务器的压力越大。</div>
+                  </s-text-field>
+                </div>
+                <div align="right">
+                  自动重试 <s-switch checked="true" style="margin-left: 8px;" id="task-auto-retry-switch"></s-switch>
+                  <s-button id="add-task-btn" onclick="addTask()" style="margin-left: 8px;">
+                    <s-circular-progress indeterminate="true" class="hidden"
+                      id="add-task-btn-loading"></s-circular-progress>
+                    添加任务
+                  </s-button>
+                </div>
+              </div>
+            </s-card>
+          </div>
+          <div id="task-panel" class="hidden" style="margin-top: 32px; margin-bottom: 32px;" align="center"
+            class="hidden">
+            <s-card id="task-panel" style="margin-top: 16px; margin-bottom: 16px;">
+              <div slot="headline">任务状态</div>
+              <div slot="text" style="margin-top: 16px;">
+                <div align="center" style="margin-bottom: 16px;">
+                  <s-alert class="full-width">你可以通过直接点击课程 ID 的小纸片来查看课程的信息</s-alert>
+                </div>
+                <div align="center" style="margin-bottom: 16px;">
+                  <s-alert type="warning" class="full-width">任务说明：空闲/完成时，点击「启动」可以开始任务；等待开始/正在进行时，点击「停止」可以终止任务。</s-alert>
+                </div>
+                <div align="right" style="margin-bottom: 16px;">
+                  <s-text-field label="自动刷新间隔（秒）" value="3" style="margin-right: 8px;"
+                    id="task-table-auto-refresh-delay" type="number"></s-text-field>
+                  <s-button onclick="toggleAutoRefreshTaskTable()" type="filled-tonal"
+                    style="margin-right: 8px;"><s-circular-progress indeterminate="true"
+                      id="task-table-auto-refresh-animation" class="hidden"></s-circular-progress> 切换自动刷新 </s-button>
+                  <s-button onclick="flushTaskTable()" type="outlined" id="flush-task-table-btn"><s-circular-progress indeterminate="true" id="flush-task-table-indicator" class="hidden"></s-circular-progress> 刷新任务列表 </s-button>
+                </div>
+                <s-linear-progress id="task-table-auto-refresh-indicator" class="hidden"
+                  style="margin-top: 8px; margin-bottom: 8px;" animated="true"></s-linear-progress>
+                <s-table style="overflow: auto; display: block; text-align: center;">
+                  <s-thead>
+                    <s-tr>
+                      <s-th>任务 ID</s-th>
+                      <s-th>JSESSIONID</s-th>
+                      <s-th>已选课程</s-th>
+                      <s-th>启动时间</s-th>
+                      <s-th>延迟</s-th>
+                      <s-th>自动重试</s-th>
+                      <s-th>状态</s-th>
+                      <s-th>操作</s-th>
+                    </s-tr>
+                  </s-thead>
+                  <s-tbody id="task-table-body">
+                  </s-tbody>
+                </s-table>
+                <s-empty id="task-empty-tip">
+                  任务列表为空，还没添加抢课任务吧 (((ﾟДﾟ;)??
+                </s-empty>
+              </div>
+            </s-card>
+          </div>
+        </main>
+      </s-scroll-view>
+    </s-drawer>
+    <s-dialog id="color-palette-dialog">
+      <div slot="headline"> 调色盘 </div>
+      <div slot="text">
+        <p>选择一个你喜欢的颜色吧！</p>
+        <input type="color" id="color-picker" value="#7746ac"
+          style="width: 100%; height: 40px; border: none; border-radius: 8px; cursor: pointer;"
+          oninput="changeAccentColor(this.value)">
+        <div align="right" style="margin-top: 8px;">
+          <s-button slot="action" type="text"
+            onclick="changeAccentColor('#7746ac')">恢复</s-button>
+          <s-button slot="action" type="text"
+            onclick="document.getElementById('color-palette-dialog').removeAttribute('showed')">关闭</s-button>
+        </div>
+    </s-dialog>
+  </s-page>
+  <script src="js/scripts.js"></script>
+  <script src="js/sober.min.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/pangu.min.js"></script>
+  <script src="js/toastify.js"></script>
+  <script>
+    //safari user-scalable=no
+    document.addEventListener('gesturestart', (event) => event.preventDefault())
+    document.addEventListener('DOMContentLoaded', () => {
+      pangu.autoSpacingPage();
+    });
+  </script>
+
+</body>
+
+</html>

@@ -48,7 +48,7 @@ python -m pdm run pyinstaller \
     --collect-all "fastapi" \
     --collect-all "pydantic" \
     --collect-all "gdut_course_grabber" \
-    --icon="static/favicon.ico" \
+    --icon="static/img/favicon.ico" \
     --onefile \
     src/gdut_course_grabber/__main__.py
 

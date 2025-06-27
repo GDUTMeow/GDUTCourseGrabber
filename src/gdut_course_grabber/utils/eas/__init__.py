@@ -56,6 +56,16 @@ class CourseSelectionFailed(Exception):
 
     @staticmethod
     def from_reason(reason: str) -> "CourseSelectionFailed":
+        """
+        从错误原因构造相应异常。
+
+        Args:
+            reason (str): 错误原因。
+
+        Returns:
+            CourseSelectionFailed: 从错误原因构造的相应异常。
+        """
+
         if "当前不是选课时间" in reason:
             return NotSelectionTime(reason)
         if "选课人数超出" in reason:

@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <link rel="icon" type="image/png" href="img/favicon.png">
+  <link rel="icon" type="image/png" href="img/favicon.ico">
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/toastify.css" />
   <title>GDUT 抢课助手 | GDUTCourseGrabber</title>
@@ -20,7 +20,7 @@
         <s-navigation mode="rail" onchange="changePanel(this.selectedIndex)">
           <!--抽屉顶部-->
           <s-icon-button slot="start" type="filled-tonal">
-            <img src="img/favicon.png" alt="Logo" style="width: 40px; height: 40px;" />
+            <img src="img/GDUT.png" alt="Logo" style="width: 40px; height: 40px;" />
           </s-icon-button>
           <s-navigation-item selected="true">
             <s-icon slot="icon">
@@ -81,7 +81,7 @@
                       src="https://avatars.githubusercontent.com/u/59642397"></s-avatar> KeqingMoe (刻晴Moe)</a><br>
                   <a href="https://github.com/Ron-1337" type="no-decoration"><s-avatar
                       src="https://avatars.githubusercontent.com/u/53028934"></s-avatar> Ron-1337 (Ron)</a><br>
-                  本程序图标由 <a href="https://github.com/Caramel-Tea" type="no-decoration">@Caramel-Tea</a> 友情设计<br>
+                  本程序吉祥物由 <a href="https://github.com/Caramel-Tea" type="no-decoration">@Caramel-Tea</a> 友情设计<br>
                   <a href="https://github.com/Caramel-Tea" type="no-decoration"><s-avatar
                       src="https://avatars.githubusercontent.com/u/194370561"></s-avatar> Caramel-Tea (Caramel
                     Tea)</a><br>
@@ -334,10 +334,10 @@
               <div slot="headline">任务状态</div>
               <div slot="text" style="margin-top: 16px;">
                 <div align="center" style="margin-bottom: 16px;">
-                  <s-alert>你可以通过直接点击课程 ID 的小纸片来查看课程的信息</s-alert>
+                  <s-alert class="full-width">你可以通过直接点击课程 ID 的小纸片来查看课程的信息</s-alert>
                 </div>
                 <div align="center" style="margin-bottom: 16px;">
-                  <s-alert type="warning">任务说明：空闲/完成时，点击「启动」可以开始任务；等待开始/正在进行时，点击「停止」可以终止任务。</s-alert>
+                  <s-alert type="warning" class="full-width">任务说明：空闲/完成时，点击「启动」可以开始任务；等待开始/正在进行时，点击「停止」可以终止任务。</s-alert>
                 </div>
                 <div align="right" style="margin-bottom: 16px;">
                   <s-text-field label="自动刷新间隔（秒）" value="3" style="margin-right: 8px;"

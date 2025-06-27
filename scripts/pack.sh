@@ -8,16 +8,26 @@ CPYTHON_VERSION="3.12.11"
 echo "Downloading CPython..."
 curl -sL $CPYTHON_BASE_URL/$CPYTHON_BUILD_DATE/cpython-$CPYTHON_VERSION+$CPYTHON_BUILD_DATE-$CPYTHON_TRIPLE-install_only_stripped.tar.gz | tar xz
 
-export PATH="$(pwd)/python/bin:$PATH"
+echo "Setting up PATH for the OS..."
+if [[ "$CPYTHON_TRIPLE" == *"windows"* ]]; then
+    export PATH="$(pwd)/python:$PATH"
+else
+    export PATH="$(pwd)/python/bin:$PATH"
+fi
+
+# 验证 python 是否可用
+echo "Python command found at: $(which python)"
+echo -n "Python version: "
+python --version
 
 echo "Installing PDM..."
-pip install pdm
+python -m pip install pdm
 
 echo "Installing packages..."
-pdm install --no-self --no-editable --prod --with pack
+python -m pdm install --no-self --no-editable --prod --with pack
 
 echo "Running PyInstaller..."
-pdm run pyinstaller \
+python -m pdm run pyinstaller \
     --name GDUTCourseGrabber \
     --noconfirm \
     --clean \

@@ -1,6 +1,6 @@
 
 <div align="center">
-<img src="https://cdn.jsdelivr.net/gh/GDUTMeow/GDUTCourseGrabber@vv3/static/img/favicon.png" height="200px">
+<img src="https://cdn.jsdelivr.net/gh/GDUTMeow/GDUTCourseGrabber@vv3/static/img/mascot/favicon.png" height="200px">
 <br>
     <h1>GDUTCourseGrabber</h1>
 </div>

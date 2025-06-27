@@ -240,8 +240,8 @@ def grab_course(course: Course, cookie: str) -> int:
 
     Returns:
         int:
-            -1: 网络错误/未开始抢课
-            0: 已达最大选课数量/课程报名人数已满
+            -1: 可重试错误（网络错误，时间限制）
+            0: 不可重试错误（已达最大选课数量/课程报名人数已满/时间冲突）
             1: 已成功选课
     """
     url = "https://jxfw.gdut.edu.cn/xsxklist!getAdd.action"
@@ -270,18 +270,17 @@ def grab_course(course: Course, cookie: str) -> int:
         log_message(
             f"抢课请求发送，课程ID: {course.kcrwdm}, 名称: {course.kcmc}, 老师: {course.teacher}, 响应: {response.text}"
         )
-        if "上课时间有冲突" in response.text:
-            return 0
         if "当前不是选课时间" in response.text:
             return -1
         if "您已经选了该门课程" in response.text:
             return 1
         if "1" in response.text:
             return 1
-        # 满人了（目前不知道具体的提示是什么，还没遇到）
-        if "满" in response.text: 
+        if "选课人数超出，请选其他课程" in response.text: 
             return 0
-        if "超出" in response.text:
+        if "超出选课要求门数" in response.text:
+            return 0
+        if "上课时间有冲突" in response.text:
             return 0
 
     except Exception as e:
@@ -325,8 +324,8 @@ def grab_cours_queue_mode(config: Config) -> None:
     按照设置的顺序/优先级进行抢课
     """
     # 重复两遍以确认
-    success_list = set[int]()
     for _ in range(2):
+        success_list = set[int]()
         for course in config.courses:
             conflixed = False
 

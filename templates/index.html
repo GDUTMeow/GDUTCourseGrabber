@@ -62,6 +62,11 @@
                     {% else %}
                     <input type="hidden" name="preset" value="false">
                     {% endif %}
+                    <div class="conflix-popup-group">
+                        <button type="button" class="btn conflix-popup-btn"
+                            onclick="showConflixDialog(this, '{{ course.kcrwdm }}')">选择冲突课程</button>
+                        <input type="hidden" name="conflix" value="{{ course.conflix|join(',') }}">
+                    </div>
                     <button type="button" class="btn remove-course" onclick="this.parentElement.remove()">-</button>
                 </div>
                 {% endfor %}
@@ -78,6 +83,7 @@
                     <tr>
                         <th>课程ID</th>
                         <th>课程名称(学分)</th>
+                        <th>分类</th>
                         <th>注意事项</th>
                         <th>老师名字</th>
                         <th>已选/上限</th>
@@ -113,9 +119,9 @@
             <label for="queue-mode">
                 <input type="checkbox" id="queue-mode" name="queue_mode" {% if queue_mode %}checked{% endif %}>
                 顺序模式
-                <a href="https://github.com/GDUTMeow/GDUTCourseGrabber/blob/v2/README.md#BETA%E5%8A%9F%E8%83%BD" target="_blank"><span
-                        style="cursor: pointer; color: #007bff;" title="除非您知道您在做什么，否则不应更改此选项"><span
-                            style="color: red;">[BETA]</span></span></a>
+                <a href="https://github.com/GDUTMeow/GDUTCourseGrabber/blob/v2/README.md#%E9%AB%98%E7%BA%A7%E5%8A%9F%E8%83%BD"
+                    target="_blank"><span style="cursor: pointer; color: #007bff;"
+                        title="除非您知道您在做什么，否则不应更改此选项">(?)</span></a>
             </label>
 
             <button type="button" class="btn" id="save-config-btn">保存配置</button>
@@ -131,6 +137,40 @@
         </div>
     </div>
     <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+    <script>
+        function showConflixDialog(btn, kcrwdm) {
+            // 获取当前课程的父div
+            const entry = btn.closest('.course-entry');
+            // 获取所有可选课程
+            const allCourses = Array.from(document.querySelectorAll('.course-entry input[name="kcrwdm"]')).map(input => ({
+                kcrwdm: input.value,
+                kcmc: input.parentElement.querySelector('input[name="kcmc"]').value
+            }));
+            // 当前已选冲突
+            const hiddenInput = entry.querySelector('input[name="conflix"]');
+            const selected = hiddenInput.value ? hiddenInput.value.split(',') : [];
+            // 构造弹窗内容
+            let html = '<div style="max-height:300px;overflow:auto;">';
+            allCourses.forEach(c => {
+                if (c.kcrwdm != kcrwdm) {
+                    html += `<label style='display:block;margin-bottom:4px;'><input type='checkbox' value='${c.kcrwdm}' ${selected.includes(c.kcrwdm) ? 'checked' : ''}>${c.kcmc}(${c.kcrwdm})</label>`;
+                }
+            });
+            html += '</div>';
+            html += '<button class="btn" id="conflix-ok">确定</button>';
+            // 显示弹窗
+            const dialog = document.querySelector('#dialog');
+            dialog.querySelector('.dialog-title').textContent = '选择冲突课程';
+            dialog.querySelector('.dialog-content').innerHTML = html;
+            dialog.showModal();
+            // 绑定确定按钮
+            document.getElementById('conflix-ok').onclick = function () {
+                const checked = Array.from(dialog.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
+                hiddenInput.value = checked.join(',');
+                dialog.close();
+            };
+        }
+    </script>
 </body>
 
 </html>

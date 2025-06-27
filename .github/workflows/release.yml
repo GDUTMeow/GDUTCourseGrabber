@@ -56,5 +56,5 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            gamernotitle/gdut_course_grabber:latest
-            gamernotitle/gdut_course_grabber:${{ needs.determine_version.outputs.app_version }}
+            gamernotitle/gdut-course-grabber:latest
+            gamernotitle/gdut-course-grabber:${{ needs.determine_version.outputs.app_version }}

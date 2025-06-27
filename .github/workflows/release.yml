@@ -1,0 +1,60 @@
+name: Build and Push Docker Image to Docker Hub
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_override:
+        description: "推送版本号（例如 v3.0.0），否则使用 Git SHA 的前 7 位"
+        required: false
+        default: ""
+        type: string
+
+jobs:
+  determine_version:
+    runs-on: ubuntu-latest
+    outputs:
+      app_version: ${{ steps.version_info.outputs.app_version }}
+    steps:
+      - name: Checkout code (to get SHA)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine Version
+        id: version_info
+        run: |
+          VERSION_INPUT="${{ github.event.inputs.version_override }}"
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+
+          if [ -n "$VERSION_INPUT" ]; then
+            APP_VERSION="$VERSION_INPUT"
+          else
+            APP_VERSION="$SHORT_SHA"
+          fi
+
+          echo "Determined App Version: $APP_VERSION"
+          echo "app_version=$APP_VERSION" >> $GITHUB_OUTPUT
+
+  build_and_push:
+    needs: determine_version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            gamernotitle/gdut_course_grabber:latest
+            gamernotitle/gdut_course_grabber:${{ needs.determine_version.outputs.app_version }}

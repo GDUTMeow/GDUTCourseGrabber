@@ -16,7 +16,7 @@ jobs:
       app_version: ${{ steps.version_info.outputs.app_version }}
     steps:
       - name: Checkout code (to get SHA)
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -45,45 +45,62 @@ jobs:
             os: ubuntu-latest
             cpython_triple: x86_64-unknown-linux-gnu
             artifact_suffix: Linux-x64-gnu
+            use_emulator: false
           - name: Linux aarch64 (GNU)
-            os: ubuntu-latest-arm64
+            os: ubuntu-latest
             cpython_triple: aarch64-unknown-linux-gnu
             artifact_suffix: Linux-arm64-gnu
+            use_emulator: true
           - name: macOS x86_64
             os: macos-13
             cpython_triple: x86_64-apple-darwin
             artifact_suffix: macOS-x64
+            use_emulator: false
           - name: macOS aarch64
             os: macos-14
             cpython_triple: aarch64-apple-darwin
             artifact_suffix: macOS-arm64
+            use_emulator: false
           - name: Windows x86_64
             os: windows-latest
             cpython_triple: x86_64-pc-windows-msvc
             artifact_suffix: Windows-x64
-          - name: Windows aarch64
-            os: windows-latest-arm64
-            cpython_triple: aarch64-pc-windows-msvc
-            artifact_suffix: Windows-arm64
+            use_emulator: false
 
+    name: Build for ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Python
-        if: runner.os != 'linux' && runner.os != 'macOS'
-        uses: actions/setup-python@v4
+      - name: Build on emulated arch
+        if: matrix.use_emulator == true
+        uses: uraimo/run-on-arch-action@v3
         with:
-          python-version: "3.12"
-      - name: Set up msys
-        if: runner.os == 'Windows'
+          arch: aarch64
+          distro: ubuntu24.04
+          githubToken: ${{ github.token }}
+
+          env: |
+            CPYTHON_TRIPLE: ${{ matrix.cpython_triple }}
+
+          install: |
+            apt-get update -q -y
+            apt-get install -q -y python3 python3-pip build-essential git curl
+
+          run: |
+            echo "Building with CPYTHON_TRIPLE=${CPYTHON_TRIPLE}"
+            chmod +x ./scripts/pack.sh
+            ./scripts/pack.sh
+
+      - name: Set up MSYS2 for Windows build
+        if: matrix.use_emulator == false && runner.os == 'Windows'
         uses: msys2/setup-msys2@v2
         with:
           msystem: UCRT64
 
-      - name: Build for Windows
-        if: runner.os == 'Windows'
+      - name: Build on Windows
+        if: matrix.use_emulator == false && runner.os == 'Windows'
         env:
           CPYTHON_TRIPLE: ${{ matrix.cpython_triple }}
         run: |
@@ -92,8 +109,8 @@ jobs:
           ./scripts/pack.sh
         shell: msys2 {0}
 
-      - name: Build for macOS/Linux
-        if: runner.os == 'macOS' || runner.os == 'Linux'
+      - name: Build on macOS/Linux
+        if: matrix.use_emulator == false && (runner.os == 'macOS' || runner.os == 'Linux')
         env:
           CPYTHON_TRIPLE: ${{ matrix.cpython_triple }}
         run: |

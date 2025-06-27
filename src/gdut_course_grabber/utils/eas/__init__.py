@@ -2,10 +2,11 @@
 提供教务系统 (EAS) 相关实用工具。
 """
 
+import contextlib
 import json as jsonlib
-from typing import Any, Self
+from typing import Any, Generator, Self
 
-from httpx import AsyncClient, Response
+from httpx import AsyncClient, HTTPStatusError, Response
 from pydantic import TypeAdapter
 
 from gdut_course_grabber.models import Account
@@ -52,6 +53,57 @@ class CourseSelectionFailed(Exception):
     def __init__(self, reason: str) -> None:
         self.reason = reason
         super().__init__(reason)
+
+    @staticmethod
+    def from_reason(reason: str) -> "CourseSelectionFailed":
+        if "当前不是选课时间" in reason:
+            return NotSelectionTime(reason)
+        if "选课人数超出" in reason:
+            return CourseIsFull(reason)
+        if "上课时间有冲突" in reason:
+            return CourseConflict(reason)
+        if "您已经选了该门课程" in reason:
+            return AlreadySelected(reason)
+        if "超出选课要求门数" in reason:
+            return RequirementExceeded(reason)
+
+        return CourseSelectionFailed(reason)
+
+
+class NotSelectionTime(CourseSelectionFailed):
+    """
+    未到选课时间。
+    """
+
+
+class CourseConflict(CourseSelectionFailed):
+    """
+    课程冲突。
+    """
+
+
+class AlreadySelected(CourseSelectionFailed):
+    """
+    课程已选择。
+    """
+
+
+class CourseIsFull(CourseSelectionFailed):
+    """
+    课程人数已满。
+    """
+
+
+class RequirementExceeded(CourseSelectionFailed):
+    """
+    超出选课要求。
+    """
+
+
+class VerifyNeeded(Exception):
+    """
+    需要认证。
+    """
 
 
 class EasClient:
@@ -106,6 +158,21 @@ class EasClient:
             raise AuthorizationFailed
         return data
 
+    @staticmethod
+    @contextlib.contextmanager
+    def _handle_request_error() -> Generator[None, None, None]:
+        """
+        处理请求错误。
+        """
+
+        try:
+            yield
+        except HTTPStatusError as ex:
+            if ex.response.is_redirect and "verify" in ex.response.headers.get("Location"):
+                raise VerifyNeeded from ex
+
+            raise
+
     async def select_course(self, course: CourseModel) -> None:
         """
         选课。
@@ -116,12 +183,14 @@ class EasClient:
 
         headers = {"Referer": str(self._client.base_url.join("/xskjcjxx!kjcjList.action"))}
         data = {"kcrwdm": str(course.id), "kcmc": course.name}
-        resp = await self._client.post("/xsxklist!getAdd.action", headers=headers, data=data)
+
+        with self._handle_request_error():
+            resp = await self._client.post("/xsxklist!getAdd.action", headers=headers, data=data)
 
         ret = self._validate(resp).decode().strip()
 
-        if ret not in ["1", "您已经选了该门课程"]:
-            raise CourseSelectionFailed(ret)
+        if ret != "1":
+            raise CourseSelectionFailed.from_reason(ret)
 
     async def get_courses(self, count: int, page: int) -> list[CourseModel]:
         """
@@ -145,7 +214,11 @@ class EasClient:
             "page": page,
             "rows": count,
         }
-        resp = await self._client.post("/xsxklist!getDataList.action", headers=headers, data=data)
+
+        with self._handle_request_error():
+            resp = await self._client.post(
+                "/xsxklist!getDataList.action", headers=headers, data=data
+            )
 
         json = jsonlib.loads(self._validate(resp))
         return list(
@@ -171,9 +244,11 @@ class EasClient:
                 self._client.base_url.join(f"/xsxklist!viewJxrl.action?kcrwdm={course_id}")
             )
         }
-        resp = await self._client.get(
-            f"/xsxklist!getJxrlDataList.action?kcrwdm={course_id}", headers=headers
-        )
+
+        with self._handle_request_error():
+            resp = await self._client.get(
+                f"/xsxklist!getJxrlDataList.action?kcrwdm={course_id}", headers=headers
+            )
 
         json = jsonlib.loads(self._validate(resp))
         return list(

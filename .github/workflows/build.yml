@@ -145,7 +145,7 @@ jobs:
         shell: msys2 {0}
 
       - name: Build on macOS or Linux
-        if: (runner.os == 'macOS' && matrix.build_method == 'standard') || (runner.os == 'linux' && matrix.build_method == 'standard')
+        if: (runner.os == 'macOS' && matrix.build_method == 'standard') || (runner.os == 'linux' && matrix.build_method == 'standard' && matrix.use_emulator == false)
         env:
           CPYTHON_TRIPLE: ${{ matrix.cpython_triple }}
         run: |

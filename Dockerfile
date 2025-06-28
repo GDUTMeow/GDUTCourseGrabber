@@ -7,4 +7,4 @@ COPY . .
 RUN pip install --no-cache-dir pdm && \
     python -m pdm install
 
-CMD ["python", "-m", "pdm", "run", "src/gdut_course_grabber/__main__.py"]
+CMD ["python", "-m", "gdut_course_grabber"]

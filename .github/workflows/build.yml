@@ -37,70 +37,105 @@ jobs:
 
   build_app:
     needs: determine_version
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
+
           - name: Linux x86_64 (GNU)
             os: ubuntu-latest
             cpython_triple: x86_64-unknown-linux-gnu
             artifact_suffix: Linux-x64-gnu
             use_emulator: false
+            build_method: standard
+
+          - name: Linux x86_64 (Manylinux)
+            os: ubuntu-latest
+            cpython_triple: x86_64-unknown-linux-gnu
+            artifact_suffix: manylinux-x64-gnu
+            use_emulator: false
+            build_method: manylinux
+
           - name: Linux aarch64 (GNU)
             os: ubuntu-latest
             cpython_triple: aarch64-unknown-linux-gnu
             artifact_suffix: Linux-arm64-gnu
             use_emulator: true
+            build_method: standard
+
+          # macOS x86_64 Build
           - name: macOS x86_64
             os: macos-13
             cpython_triple: x86_64-apple-darwin
             artifact_suffix: macOS-x64
             use_emulator: false
+            build_method: standard
+
+          # macOS aarch64 Build
           - name: macOS aarch64
             os: macos-14
             cpython_triple: aarch64-apple-darwin
             artifact_suffix: macOS-arm64
             use_emulator: false
+            build_method: standard
+
+          # Windows x86_64 Build
           - name: Windows x86_64
             os: windows-latest
             cpython_triple: x86_64-pc-windows-msvc
             artifact_suffix: Windows-x64
             use_emulator: false
+            build_method: standard
 
     name: Build for ${{ matrix.name }}
-    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Make pack script executable
+        run: chmod +x ./scripts/pack.sh
+
+      - name: Build Linux x86_64 in Manylinux Container
+        if: matrix.build_method == 'manylinux'
+        run: |
+          MANYLINUX_IMAGE="quay.io/pypa/manylinux2014:latest"
+
+          echo "Building in $MANYLINUX_IMAGE container..."
+
+          docker run \
+            --rm \
+            -v ${{ github.workspace }}:/ws \
+            -w /ws \
+            -e CPYTHON_TRIPLE=${{ matrix.cpython_triple }} \
+            $MANYLINUX_IMAGE \
+            /bin/bash -c "ldd --version && ./scripts/pack.sh"
+
       - name: Build on emulated arch
-        if: matrix.use_emulator == true
+        if: matrix.use_emulator == true && matrix.build_method == 'standard'
         uses: uraimo/run-on-arch-action@v3
         with:
           arch: aarch64
           distro: ubuntu24.04
           githubToken: ${{ github.token }}
-
           env: |
             CPYTHON_TRIPLE: ${{ matrix.cpython_triple }}
-
           install: |
             apt-get update -q -y
             apt-get install -q -y python3 python3-pip build-essential git curl
-
           run: |
             echo "Building with CPYTHON_TRIPLE=${CPYTHON_TRIPLE}"
             chmod +x ./scripts/pack.sh
             ./scripts/pack.sh
 
       - name: Set up MSYS2 for Windows build
-        if: matrix.use_emulator == false && runner.os == 'Windows'
+        if: runner.os == 'Windows' && matrix.build_method == 'standard'
         uses: msys2/setup-msys2@v2
         with:
           msystem: UCRT64
 
       - name: Build on Windows
-        if: matrix.use_emulator == false && runner.os == 'Windows'
+        if: runner.os == 'Windows' && matrix.build_method == 'standard'
         env:
           CPYTHON_TRIPLE: ${{ matrix.cpython_triple }}
         run: |
@@ -109,14 +144,13 @@ jobs:
           ./scripts/pack.sh
         shell: msys2 {0}
 
-      - name: Build on macOS/Linux
-        if: matrix.use_emulator == false && (runner.os == 'macOS' || runner.os == 'Linux')
+      - name: Build on macOS or Linux
+        if: (runner.os == 'macOS' && matrix.build_method == 'standard') || (runner.os == 'linux' && matrix.build_method == 'standard')
         env:
           CPYTHON_TRIPLE: ${{ matrix.cpython_triple }}
         run: |
           if [[ "$CPYTHON_TRIPLE" == *"musl"* ]]; then
-            sudo apt-get update
-            sudo apt-get install -y musl-dev
+            echo "Warning: musl build is for Linux, skipping musl-dev install on macOS."
           fi
           echo "Building with CPYTHON_TRIPLE=${CPYTHON_TRIPLE}"
           chmod +x ./scripts/pack.sh

@@ -4,6 +4,7 @@
 <br>
     <h1>GDUTCourseGrabber</h1>
 </div>
+
 ## 快速上手
 
 > [!important]

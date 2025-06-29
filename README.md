@@ -4,8 +4,15 @@
 <br>
     <h1>GDUTCourseGrabber</h1>
 </div>
-
 ## 快速上手
+
+> [!important]
+>
+> 程序有以下三种运行方式
+>
+> - **二进制文件运行（推荐！！！）：去 RELEASE 页面下载正确的系统及架构的文件，解压后打开即可**
+> - Docker 运行：`docker run --name gdut-course-grabber --network host gamernotitle/gdut-course-grabber`
+> - 源码运行：`pip install pdm && pdm sync && python -m gdut_course_grabber`
 
 首先，我们先访问教务系统
 
